@@ -78,51 +78,56 @@ window.api = {
 // Menu actions are emitted from the Rust shell as a single 'menu' event.
 const inTauri = typeof window !== 'undefined' && (window.__TAURI_INTERNALS__ || window.__TAURI__);
 if (inTauri) {
-  listen('menu', (event) => {
-    const { action, arg } = event.payload || {};
-    switch (action) {
-      case 'open':
-        openViaDialog();
-        break;
-      case 'save':
-        fire('save');
-        break;
-      case 'save-as':
-        fire('saveAs');
-        break;
-      case 'zoom':
-        fire('zoom', arg);
-        break;
-      case 'toggle-theme':
-        fire('toggleTheme');
-        break;
-      case 'toggle-toc':
-        fire('toggleToc');
-        break;
-      case 'toggle-edit':
-        fire('toggleEdit');
-        break;
-      case 'set-mode':
-        fire('setMode', arg);
-        break;
-      case 'show-help':
-        fire('showHelp');
-        break;
-      case 'recent':
-        if (arg) openByPath(arg);
-        break;
-      default:
-        break;
-    }
-  }).catch((e) => console.error('listen menu failed', e));
+  // Register listeners BEFORE telling Rust we are ready. `listen` and
+  // `invoke` are both async; if `mark_ready` ran before the `open-file`
+  // listener was registered, the cold-start `open-file` event flushed by
+  // `mark_ready` would be emitted into a void and dropped — so the first
+  // double-click on a .md opened the app but not the document. Awaiting the
+  // listeners first guarantees the front-end is listening before the flush.
+  (async () => {
+    await listen('menu', (event) => {
+      const { action, arg } = event.payload || {};
+      switch (action) {
+        case 'open':
+          openViaDialog();
+          break;
+        case 'save':
+          fire('save');
+          break;
+        case 'save-as':
+          fire('saveAs');
+          break;
+        case 'zoom':
+          fire('zoom', arg);
+          break;
+        case 'toggle-theme':
+          fire('toggleTheme');
+          break;
+        case 'toggle-toc':
+          fire('toggleToc');
+          break;
+        case 'toggle-edit':
+          fire('toggleEdit');
+          break;
+        case 'set-mode':
+          fire('setMode', arg);
+          break;
+        case 'show-help':
+          fire('showHelp');
+          break;
+        case 'recent':
+          if (arg) openByPath(arg);
+          break;
+        default:
+          break;
+      }
+    });
 
-  // Files opened from Finder / "Open with" are delivered by the Rust shell as
-  // an 'open-file' event carrying the absolute path.
-  listen('open-file', (event) => {
-    openByPath(event.payload);
-  }).catch((e) => console.error('listen open-file failed', e));
+    await listen('open-file', (event) => {
+      openByPath(event.payload);
+    });
 
-  // Tell the Rust shell the renderer is ready so any pending file-open
-  // requests captured during cold start get flushed to us.
-  invoke('mark_ready').catch((e) => console.error('mark_ready failed', e));
+    // Now signal readiness so any file captured during cold start is flushed.
+    await invoke('mark_ready');
+  })().catch((e) => console.error('tauri listener init failed', e));
 }
