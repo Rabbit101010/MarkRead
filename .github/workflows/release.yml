@@ -1,0 +1,65 @@
+name: Release
+
+# Build MarkRead for macOS (universal: Apple Silicon + Intel) and Windows,
+# then create / update a GitHub Release and upload the installers.
+# Trigger by pushing a tag like `v0.2.0`, or run manually from the Actions tab.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target universal-apple-darwin --bundles dmg'
+          - platform: 'windows-latest'
+            args: '--bundles msi'
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # macOS universal binary needs both architectures' Rust std.
+      - name: Add Rust targets (macOS universal)
+        if: matrix.platform == 'macos-latest'
+        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build and publish (Tauri)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'MarkRead ${{ github.ref_name }}'
+          releaseBody: |
+            ## MarkRead ${{ github.ref_name }}
+
+            ### 下载 / Download
+            - **macOS**（`.dmg`，Apple Silicon 与 Intel 通用，macOS 10.15+）
+            - **Windows**（`.msi`，x64，Windows 10 / 11）
+
+            ### 安装说明 / Notes
+            - macOS 包未公证（notarize）。若首次打开被拦截：右键 → 打开，或终端执行
+              `xattr -cr /Applications/MarkRead.app`
+            - Windows 包未代码签名，安装时 SmartScreen 可能警告，选择"仍要运行"即可。
+
+            完整源码：https://github.com/Rabbit101010/MarkRead
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}

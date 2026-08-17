@@ -55,10 +55,14 @@ src-tauri/target/release/bundle/macos/MarkRead.app
 把它拖到 `/Applications` 即可长期使用。
 
 ### 下载（预编译）
-不想自己编译？前往 **[Releases](https://github.com/Rabbit101010/MarkRead/releases)** 下载 `MarkRead-macos.zip`，解压后把 `MarkRead.app` 拖入「应用程序」文件夹即可。
+不想自己编译？前往 **[Releases](https://github.com/Rabbit101010/MarkRead/releases)** 下载对应平台的安装包：
+- **macOS**（`.dmg`，Apple Silicon 与 Intel 通用，macOS 10.15+）：打开 `.dmg`，把 `MarkRead.app` 拖入「应用程序」。
+- **Windows**（`.msi`，x64，Windows 10 / 11）：双击安装即可。
+
+> 注：macOS 包未公证，首次打开若被拦截，右键 → 打开，或终端执行 `xattr -cr /Applications/MarkRead.app`；Windows 包未签名，安装时 SmartScreen 可能警告，选择「仍要运行」即可。
 
 ### 技术栈
-Tauri 2 · Rust · markdown-it · KaTeX · Mermaid · highlight.js · 原生 macOS WebView (WKWebView)
+Tauri 2 · Rust · markdown-it · KaTeX · Mermaid · highlight.js · 原生 WebView（macOS WKWebView / Windows WebView2）· 跨平台（macOS 10.15+ / Windows 10·11）
 
 ### 许可证
 本项目当前**未指定许可证**。如需开源发布，可添加 `LICENSE` 文件（例如 MIT）。
@@ -113,10 +117,14 @@ src-tauri/target/release/bundle/macos/MarkRead.app
 Drag it to `/Applications` for permanent use.
 
 ### Download (prebuilt)
-Prefer not to build? Grab `MarkRead-macos.zip` from the **[Releases](https://github.com/Rabbit101010/MarkRead/releases)** page, unzip, and drag `MarkRead.app` into your Applications folder.
+Prefer not to build? Grab the installer for your platform from the **[Releases](https://github.com/Rabbit101010/MarkRead/releases)** page:
+- **macOS**（`.dmg`, universal for Apple Silicon **and** Intel, macOS 10.15+): open the `.dmg` and drag `MarkRead.app` into Applications.
+- **Windows**（`.msi`, x64, Windows 10 / 11): double-click to install.
+
+> Note: the macOS build is not notarized — if first launch is blocked, right-click → Open, or run `xattr -cr /Applications/MarkRead.app` in Terminal. The Windows build is unsigned, so SmartScreen may warn; choose "Run anyway".
 
 ### Tech Stack
-Tauri 2 · Rust · markdown-it · KaTeX · Mermaid · highlight.js · native macOS WebView (WKWebView)
+Tauri 2 · Rust · markdown-it · KaTeX · Mermaid · highlight.js · native WebView (macOS WKWebView / Windows WebView2) · cross-platform (macOS 10.15+ / Windows 10·11)
 
 ### License
 This project is currently **unlicensed**. To release it openly, add a `LICENSE` file (e.g. MIT).
