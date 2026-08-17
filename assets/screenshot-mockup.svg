@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <!-- window shadow / frame -->
+  <defs>
+    <linearGradient id="titlebar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6f6f8"/>
+      <stop offset="1" stop-color="#e9e9ee"/>
+    </linearGradient>
+    <linearGradient id="toolbar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbfbfd"/>
+      <stop offset="1" stop-color="#f1f1f5"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="14" flood-color="#000" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <rect x="8" y="8" width="1264" height="804" rx="12" fill="#ffffff" filter="url(#soft)"/>
+  <rect x="8" y="8" width="1264" height="804" rx="12" fill="none" stroke="#d9d9de" stroke-width="1"/>
+
+  <!-- title bar -->
+  <path d="M20 8 h1240 a12 12 0 0 1 12 12 v18 h-1264 v-18 a12 12 0 0 1 12 -12 z" fill="url(#titlebar)"/>
+  <circle cx="34" cy="29" r="6.5" fill="#ff5f57"/>
+  <circle cx="56" cy="29" r="6.5" fill="#febc2e"/>
+  <circle cx="78" cy="29" r="6.5" fill="#28c840"/>
+  <text x="640" y="34" text-anchor="middle" font-size="13" fill="#5b5b62" font-weight="600">MarkRead</text>
+
+  <!-- toolbar -->
+  <rect x="8" y="58" width="1264" height="46" fill="url(#toolbar)"/>
+  <line x1="8" y1="104" x2="1272" y2="104" stroke="#e2e2e8" stroke-width="1"/>
+
+  <!-- toolbar: TOC button (leftmost) -->
+  <g>
+    <rect x="20" y="68" width="62" height="28" rx="6" fill="#ffffff" stroke="#d0d0d8"/>
+    <text x="33" y="86" font-size="15" fill="#3a3a40">&#9776;</text>
+    <text x="48" y="86" font-size="12" fill="#3a3a40">目录</text>
+  </g>
+  <!-- mode group -->
+  <g>
+    <rect x="120" y="68" width="56" height="28" rx="6" fill="#ffffff" stroke="#d0d0d8"/>
+    <text x="148" y="86" text-anchor="middle" font-size="12" fill="#8a8a90">阅读</text>
+    <rect x="180" y="68" width="56" height="28" rx="6" fill="#2d7ff9"/>
+    <text x="208" y="86" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="600">双栏</text>
+    <rect x="240" y="68" width="56" height="28" rx="6" fill="#ffffff" stroke="#d0d0d8"/>
+    <text x="268" y="86" text-anchor="middle" font-size="12" fill="#8a8a90">编辑</text>
+  </g>
+  <!-- right side buttons -->
+  <g fill="#6b6b72" font-size="13">
+    <rect x="1116" y="68" width="40" height="28" rx="6" fill="#ffffff" stroke="#d0d0d8"/>
+    <text x="1136" y="86" text-anchor="middle">&#9788;</text>
+    <rect x="1162" y="68" width="40" height="28" rx="6" fill="#ffffff" stroke="#d0d0d8"/>
+    <text x="1182" y="86" text-anchor="middle">&#128190;</text>
+    <rect x="1208" y="68" width="40" height="28" rx="6" fill="#ffffff" stroke="#d0d0d8"/>
+    <text x="1228" y="86" text-anchor="middle">?</text>
+  </g>
+
+  <!-- tab bar -->
+  <rect x="8" y="104" width="1264" height="36" fill="#ffffff"/>
+  <line x1="8" y1="140" x2="1272" y2="140" stroke="#e2e2e8" stroke-width="1"/>
+  <g font-size="12.5">
+    <!-- active tab -->
+    <rect x="8" y="104" width="150" height="36" fill="#f7f9ff"/>
+    <line x1="8" y1="104" x2="8" y2="140" stroke="#e2e2e8"/>
+    <line x1="158" y1="104" x2="158" y2="140" stroke="#e2e2e8"/>
+    <text x="22" y="126" fill="#1f2328" font-weight="600">README.md</text>
+    <circle cx="120" cy="121" r="5" fill="none" stroke="#9a9aa2" stroke-width="1.2"/>
+    <line x1="117.5" y1="118.5" x2="122.5" y2="123.5" stroke="#9a9aa2" stroke-width="1.2"/>
+    <line x1="122.5" y1="118.5" x2="117.5" y2="123.5" stroke="#9a9aa2" stroke-width="1.2"/>
+    <line x1="8" y1="138" x2="158" y2="138" stroke="#2d7ff9" stroke-width="2.5"/>
+    <!-- inactive tab -->
+    <text x="178" y="126" fill="#5b5b62">notes.md</text>
+    <circle cx="262" cy="121" r="3" fill="#f5a623"/>
+    <text x="284" y="126" fill="#5b5b62">guide.md</text>
+    <rect x="380" y="110" width="22" height="22" rx="4" fill="none" stroke="#c8c8d0"/>
+    <text x="391" y="126" text-anchor="middle" fill="#9a9aa2">+</text>
+  </g>
+
+  <!-- content area -->
+  <rect x="8" y="140" width="1264" height="650" fill="#ffffff"/>
+
+  <!-- TOC sidebar (left) -->
+  <rect x="8" y="140" width="190" height="650" fill="#fafafb"/>
+  <line x1="198" y1="140" x2="198" y2="790" stroke="#ececf0"/>
+  <text x="22" y="166" font-size="12" fill="#9a9aa2" font-weight="600" letter-spacing="1">目录大纲</text>
+  <g font-size="12.5" fill="#3a3a40">
+    <text x="22" y="196" font-weight="600">MarkRead 使用说明</text>
+    <text x="36" y="222" fill="#5b5b62">功能</text>
+    <text x="36" y="246" fill="#5b5b62">公式</text>
+    <text x="36" y="270" fill="#2d7ff9" font-weight="600">代码</text>
+    <text x="36" y="294" fill="#5b5b62">流程图</text>
+  </g>
+
+  <!-- editor pane (source) -->
+  <rect x="198" y="140" width="442" height="650" fill="#ffffff"/>
+  <line x1="640" y1="140" x2="640" y2="790" stroke="#d0d0d8" stroke-width="2"/>
+  <g font-family="'SF Mono', 'JetBrains Mono', Consolas, monospace" font-size="13">
+    <text x="214" y="174" fill="#0550ae" font-weight="700"># MarkRead 使用说明</text>
+    <text x="214" y="200" fill="#24292e">这是一个**双栏** Markdown 阅读器。</text>
+    <text x="214" y="232" fill="#0550ae" font-weight="700">## 功能</text>
+    <text x="214" y="256" fill="#24292e">- 三种模式：阅读 / 双栏 / 编辑</text>
+    <text x="214" y="278" fill="#24292e">- 双击左栏 &#8594; 右栏定位</text>
+    <text x="214" y="310" fill="#0550ae" font-weight="700">## 公式</text>
+    <text x="214" y="334" fill="#24292e">质能方程：</text>
+    <text x="214" y="356" fill="#6f42c1" font-style="italic">$E = mc^2$</text>
+    <text x="214" y="388" fill="#0550ae" font-weight="700">## 代码</text>
+    <rect x="208" y="400" width="416" height="132" rx="6" fill="#f6f8fa"/>
+    <text x="220" y="420" fill="#6a737d">```js</text>
+    <text x="220" y="442" fill="#d73a49">function</text>
+    <text x="220" y="462" fill="#24292e"> greet(name) {</text>
+    <text x="220" y="484" fill="#032f62">  return</text>
+    <text x="220" y="504" fill="#032f62"> `Hello, ${name}!`;</text>
+    <text x="220" y="526" fill="#24292e">}</text>
+    <text x="220" y="548" fill="#6a737d">```</text>
+  </g>
+  <text x="214" y="600" fill="#0550ae" font-weight="700" font-size="13" font-family="-apple-system, sans-serif">## 流程图</text>
+  <text x="214" y="624" fill="#24292e" font-size="13" font-family="-apple-system, sans-serif">见右侧 Mermaid 图。</text>
+
+  <!-- preview pane (rendered) -->
+  <rect x="640" y="140" width="632" height="650" fill="#ffffff"/>
+  <g>
+    <text x="664" y="182" font-size="24" font-weight="800" fill="#1f2328">MarkRead 使用说明</text>
+    <line x1="664" y1="194" x2="744" y2="194" stroke="#2d7ff9" stroke-width="3"/>
+    <text x="664" y="226" font-size="14" fill="#1f2328">这是一个<tspan font-weight="700">双栏</tspan> Markdown 阅读器。</text>
+    <text x="664" y="262" font-size="18" font-weight="700" fill="#1f2328">功能</text>
+    <text x="664" y="288" font-size="14" fill="#1f2328">• 三种模式：阅读 / 双栏 / 编辑</text>
+    <text x="664" y="312" font-size="14" fill="#1f2328">• 双击左栏 → 右栏定位</text>
+
+    <text x="664" y="352" font-size="18" font-weight="700" fill="#1f2328">公式</text>
+    <text x="664" y="384" font-size="14" fill="#1f2328">质能方程：</text>
+    <!-- KaTeX-ish E = mc^2 -->
+    <g transform="translate(760,360)">
+      <text x="0" y="22" font-size="20" font-style="italic" fill="#1a1a1a">E</text>
+      <text x="22" y="22" font-size="20" fill="#1a1a1a">=</text>
+      <text x="42" y="22" font-size="20" font-style="italic" fill="#1a1a1a">mc</text>
+      <text x="78" y="10" font-size="13" fill="#1a1a1a">2</text>
+    </g>
+
+    <!-- code block -->
+    <text x="664" y="430" font-size="18" font-weight="700" fill="#1f2328">代码</text>
+    <rect x="664" y="444" width="576" height="118" rx="8" fill="#f6f8fa"/>
+    <text x="680" y="470" font-family="'SF Mono', Consolas, monospace" font-size="13" fill="#d73a49">function</text>
+    <text x="680" y="492" font-family="'SF Mono', Consolas, monospace" font-size="13" fill="#24292e"> greet(name) {</text>
+    <text x="680" y="514" font-family="'SF Mono', Consolas, monospace" font-size="13" fill="#032f62">  return</text>
+    <text x="680" y="536" font-family="'SF Mono', Consolas, monospace" font-size="13" fill="#032f62"> `Hello, ${name}!`;</text>
+    <text x="680" y="558" font-family="'SF Mono', Consolas, monospace" font-size="13" fill="#24292e">}</text>
+
+    <!-- Mermaid flowchart -->
+    <text x="664" y="600" font-size="18" font-weight="700" fill="#1f2328">流程图</text>
+    <g>
+      <rect x="664" y="616" width="120" height="40" rx="8" fill="#e8f0ff" stroke="#2d7ff9"/>
+      <text x="724" y="641" text-anchor="middle" font-size="13" fill="#1f2328">编写 .md</text>
+      <path d="M784 636 h28" stroke="#9a9aa2" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <rect x="812" y="616" width="120" height="40" rx="8" fill="#e8f0ff" stroke="#2d7ff9"/>
+      <text x="872" y="641" text-anchor="middle" font-size="13" fill="#1f2328">解析渲染</text>
+      <path d="M932 636 h28" stroke="#9a9aa2" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <rect x="960" y="616" width="120" height="40" rx="8" fill="#e8f0ff" stroke="#2d7ff9"/>
+      <text x="1020" y="641" text-anchor="middle" font-size="13" fill="#1f2328">双栏预览</text>
+    </g>
+    <defs>
+      <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0 0 L8 4 L0 8 z" fill="#9a9aa2"/>
+      </marker>
+    </defs>
+  </g>
+
+  <!-- status bar -->
+  <rect x="8" y="790" width="1264" height="22" fill="#f7f7fa"/>
+  <line x1="8" y1="790" x2="1272" y2="790" stroke="#e2e2e8"/>
+  <text x="22" y="805" font-size="11" fill="#9a9aa2">UTF-8 · LF · 行 12, 列 4</text>
+  <text x="1250" y="805" text-anchor="end" font-size="11" fill="#9a9aa2">双栏模式 · 已保存</text>
+
+  <!-- mockup watermark -->
+  <text x="1250" y="784" text-anchor="end" font-size="10" fill="#c0c0c8" font-style="italic">UI mockup · 界面示意图</text>
+</svg>

@@ -26,6 +26,11 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 - **自包含资源**：KaTeX 字体、代码高亮样式等都随包发布，无需联网。
 - **多文档标签页**：通过右键 md「打开方式 → MarkRead」、拖入文件、或菜单「打开」，每个文件都会新开一个标签页；点击标签切换，标签上的 × 关闭。已打开的文件再次打开会自动聚焦到对应标签。每个标签独立记住阅读模式、目录展开、滚动位置与未保存状态。
 
+### 界面预览
+![MarkRead 界面示意图](assets/screenshot-mockup.png)
+
+> 上图为 **UI 示意图**，展示双栏模式下的多文档标签页、左侧目录大纲与右侧渲染预览（含 KaTeX 公式、代码高亮、Mermaid 流程图）。实际界面以应用为准，可在 Mac 上截取真实窗口图替换本图。
+
 ### 快捷键
 | 快捷键 | 功能 |
 |---|---|
@@ -87,6 +92,11 @@ MarkRead is a desktop Markdown tool built with Tauri 2 (Rust + WebView). It comb
 - **Math & diagrams**: built-in KaTeX (LaTeX) and Mermaid (flowcharts, sequence diagrams, etc.).
 - **Self-contained assets**: KaTeX fonts and highlight styles ship with the app — no network needed.
 - **Multiple-document tabs**: opening a file via "Open With → MarkRead" (right-click a .md), dropping files, or the "Open" menu each spawns a new tab. Click a tab to switch; the × closes it. Re-opening an already-open file focuses its tab instead of duplicating. Each tab independently remembers its mode, outline state, scroll position, and unsaved changes.
+
+### Screenshots
+![MarkRead UI mockup](assets/screenshot-mockup.png)
+
+> The image above is a **UI mockup** showing the split-pane mode with multiple-document tabs, the left-side outline, and the rendered preview (KaTeX, syntax highlighting, Mermaid). The real UI may differ — feel free to replace it with an actual window screenshot.
 
 ### Keyboard Shortcuts
 | Shortcut | Action |
