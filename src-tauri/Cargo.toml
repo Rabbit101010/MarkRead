@@ -1,0 +1,25 @@
+[package]
+name = "markread"
+version = "0.1.0"
+description = "A comfortable Markdown reader for macOS"
+authors = ["you"]
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "md_reader"
+crate-type = ["rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[features]
+# Default features for the application.
+default = []
+custom-protocol = ["tauri/custom-protocol"]

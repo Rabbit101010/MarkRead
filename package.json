@@ -1,0 +1,26 @@
+{
+  "name": "markread-tauri",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A comfortable Markdown reader for macOS (Tauri 2 shell)",
+  "scripts": {
+    "build:front": "esbuild src/renderer.js --bundle --outfile=dist/renderer.bundle.js --format=iife --platform=browser --loader:.woff=text --loader:.woff2=text --loader:.ttf=text && node scripts/copy-assets.js",
+    "dev": "node scripts/serve.js",
+    "tauri": "tauri",
+    "build": "tauri build",
+    "icon": "tauri icon"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.1.1",
+    "@tauri-apps/plugin-dialog": "^2.2.0",
+    "dompurify": "^3.2.3",
+    "highlight.js": "^11.10.0",
+    "katex": "^0.16.11",
+    "markdown-it": "^14.1.0",
+    "mermaid": "^11.4.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0",
+    "esbuild": "^0.24.2"
+  }
+}

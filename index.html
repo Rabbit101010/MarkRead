@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MarkRead</title>
+    <link rel="stylesheet" href="vendor/katex/katex.min.css" />
+    <link rel="stylesheet" href="vendor/highlight/github.css" />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body class="theme-light">
+    <div id="app">
+      <header class="toolbar">
+        <div class="toolbar-left">
+          <button id="btn-open" class="tb-btn" title="打开文件 (Cmd+O)">打开</button>
+          <span id="doc-name" class="doc-name"></span>
+          <span id="save-status" class="save-status"></span>
+          <span id="dirty-dot" class="dirty-dot" title="有未保存的修改"></span>
+        </div>
+        <div class="toolbar-right">
+          <button id="btn-toc" class="tb-btn" title="目录 (Cmd+\)">目录</button>
+          <div class="mode-group">
+            <button id="btn-mode-read" class="mode-btn active" data-mode="read" title="阅读模式">阅读</button>
+            <button id="btn-mode-split" class="mode-btn" data-mode="split" title="双栏模式（编辑+预览）">双栏</button>
+            <button id="btn-mode-edit" class="mode-btn" data-mode="edit" title="编辑模式 (Cmd+E)">编辑</button>
+          </div>
+          <button id="btn-locate-preview" class="tb-btn locate-btn" title="右侧预览跳到光标所在段落（双击左侧编辑区 / Cmd+Enter）">↦ 预览</button>
+          <button id="btn-locate-edit" class="tb-btn locate-btn" title="左侧编辑器定位到当前预览段落（双击右侧正文 / Cmd+Enter）">↤ 编辑</button>
+          <button id="btn-save" class="tb-btn" title="保存 (Cmd+S)">保存</button>
+          <button id="btn-save-as" class="tb-btn" title="另存为 (Cmd+Shift+S)">另存为</button>
+          <button id="btn-theme" class="tb-btn" title="切换主题 (Cmd+T)">主题</button>
+          <div class="zoom-group">
+            <button id="btn-zoom-out" class="tb-btn" title="缩小 (Cmd+-)">A−</button>
+            <button id="btn-zoom-reset" class="tb-btn" title="重置字号 (Cmd+0)">A</button>
+            <button id="btn-zoom-in" class="tb-btn" title="放大 (Cmd+=)">A+</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="body">
+        <aside id="toc" class="toc"></aside>
+        <textarea id="editor" class="editor" spellcheck="false" placeholder="在此输入 Markdown…"></textarea>
+        <div id="splitter" class="splitter" title="拖动调整左右栏宽度"></div>
+        <main id="content" class="content">
+          <div id="empty" class="empty">
+            <div class="empty-inner">
+              <div class="logo">M↓</div>
+              <h1>MarkRead</h1>
+              <p>拖入 <code>.md</code> 文件，或点击左上角「打开」开始阅读。</p>
+              <p class="hint">支持 Mermaid 图表 · KaTeX 数学公式 · 代码高亮 · 多主题</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div id="drop-overlay" class="drop-overlay"><div class="drop-inner">松开以打开 Markdown 文件</div></div>
+    <div id="help-overlay" class="help-overlay hidden">
+      <div class="help-card">
+        <h2>MarkRead</h2>
+        <p>一个为「舒适阅读」而生的 macOS Markdown 阅读器。</p>
+        <ul>
+          <li><b>打开</b>：菜单 文件 › 打开，或拖入文件，或拖到程序图标</li>
+          <li><b>三种模式</b>：阅读 / 双栏（左编辑右预览）/ 编辑，工具栏切换或 Cmd+E</li>
+          <li><b>修改</b>：在「双栏」或「编辑」模式下直接改文本，Cmd+S 保存到文件（Cmd+Shift+S 另存为）</li>
+          <li><b>自动保存</b>：编辑/双栏模式下，有文件路径时输入后约 1 秒自动写回原文件（脏点消失即表示已存）</li>
+          <li><b>自定义栏宽</b>：双栏模式下按住中间分隔条左右拖动，可调整左编辑器与右预览的宽度（自动记忆）</li>
+          <li><b>点击关联</b>：双栏模式下，双击左侧编辑区 → 右侧预览跳到对应段落；双击右侧正文 → 左侧编辑器光标定位到对应源行。也可用工具栏「↦ 预览 / ↤ 编辑」按钮，或 Cmd+Enter 双向跳转</li>
+          <li><b>主题</b>：浅色 / 护眼 / 深色，快捷键 Cmd+T</li>
+          <li><b>字号</b>：Cmd+ +/-/0</li>
+          <li><b>目录</b>：Cmd+\ 切换侧边大纲</li>
+        </ul>
+        <p class="hint">图表用 <code>```mermaid</code> 代码块；公式用 <code>$...$</code> 与 <code>$$...$$</code>。</p>
+        <button id="btn-help-close" class="tb-btn">关闭</button>
+      </div>
+    </div>
+
+    <script src="renderer.bundle.js"></script>
+  </body>
+</html>

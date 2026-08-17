@@ -1,0 +1,32 @@
+# ===== macOS 系统文件 =====
+.DS_Store
+
+# ===== Node 依赖与前端打包产物（均可由 npm 重建，勿传）=====
+node_modules/
+dist/
+
+# ===== Rust / Tauri 编译产物（src-tauri/target 约 1.1G，切勿上传）=====
+target/
+src-tauri/target/
+
+# ===== Tauri 自动生成目录（构建时自动重建）=====
+src-tauri/gen/
+
+# ===== 日志等临时文件 =====
+*.log
+
+# ------------------------------------------------------------------
+# 以下为「必须保留、不要忽略」的源码与资源（列在此仅作提示）：
+#   src/                    前端源码 (api.js / renderer.js / styles)
+#   index.html              WebView 入口
+#   src-tauri/src/          Rust 源码 (lib.rs / main.rs)
+#   src-tauri/Cargo.toml    Rust 依赖声明
+#   src-tauri/Cargo.lock    锁定 Rust 依赖版本（二进制应用应提交）
+#   src-tauri/tauri.conf.json / build.rs / capabilities/  构建配置
+#   src-tauri/icons/       构建必需的图标（缺它会编译失败）
+#   vendor/                本地 KaTeX 字体与样式（非 npm 包，必须提交）
+#   assets/                图标源图
+#   scripts/               本地构建脚本 (copy-assets / make_icon / serve)
+#   package.json / package-lock.json   前端依赖
+#   sample.md              示例文档
+# ------------------------------------------------------------------
