@@ -70,7 +70,7 @@ src-tauri/target/release/bundle/macos/MarkRead.app
 Tauri 2 · Rust · markdown-it · KaTeX · Mermaid · highlight.js · 原生 WebView（macOS WKWebView / Windows WebView2）· 跨平台（macOS 10.15+ / Windows 10·11）
 
 ### 许可证
-本项目当前**未指定许可证**。如需开源发布，可添加 `LICENSE` 文件（例如 MIT）。
+本项目采用 **MIT 许可证**。详见 [LICENSE](LICENSE) 文件。
 
 ---
 
@@ -137,4 +137,4 @@ Prefer not to build? Grab the installer for your platform from the **[Releases](
 Tauri 2 · Rust · markdown-it · KaTeX · Mermaid · highlight.js · native WebView (macOS WKWebView / Windows WebView2) · cross-platform (macOS 10.15+ / Windows 10·11)
 
 ### License
-This project is currently **unlicensed**. To release it openly, add a `LICENSE` file (e.g. MIT).
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.

@@ -103,30 +103,39 @@ pub fn run() {
         .expect("error while building tauri application");
 
     app.run(|app_handle, event| {
-        if let RunEvent::Opened { urls } = event {
-            let ready = *ready_store().lock().unwrap();
-            let mut collected: Vec<String> = Vec::new();
-            {
-                let mut pend = pending_store().lock().unwrap();
-                for url in urls {
-                    if let Ok(path) = url.to_file_path() {
-                        let p = path.to_string_lossy().to_string();
-                        if ready {
-                            collected.push(p);
-                        } else {
-                            pend.push(p);
+        // File-association / "Open with" handling. `RunEvent::Opened` is only
+        // available on macOS in the current Tauri version; on Windows/Linux we
+        // ignore the event so the build stays portable (Windows file
+        // association via argv / deep-link is a follow-up).
+        #[cfg(target_os = "macos")]
+        {
+            if let RunEvent::Opened { urls } = event {
+                let ready = *ready_store().lock().unwrap();
+                let mut collected: Vec<String> = Vec::new();
+                {
+                    let mut pend = pending_store().lock().unwrap();
+                    for url in urls {
+                        if let Ok(path) = url.to_file_path() {
+                            let p = path.to_string_lossy().to_string();
+                            if ready {
+                                collected.push(p);
+                            } else {
+                                pend.push(p);
+                            }
+                        }
+                    }
+                }
+                if ready {
+                    for p in collected {
+                        if let Some(w) = app_handle.get_webview_window("main") {
+                            let _ = w.emit("open-file", &p);
                         }
                     }
                 }
             }
-            if ready {
-                for p in collected {
-                    if let Some(w) = app_handle.get_webview_window("main") {
-                        let _ = w.emit("open-file", &p);
-                    }
-                }
-            }
         }
+        #[cfg(not(target_os = "macos"))]
+        let _ = (app_handle, event);
     });
 }
 
