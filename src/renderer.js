@@ -215,6 +215,168 @@ let isDirty = false;
 let renderedSource = null; // last source rendered into the preview
 const THEMES = ['light', 'sepia', 'dark'];
 
+// Multi-document (tabs) model. The six `current*` vars above are the live view
+// of the active document; each opened file is snapshotted into `docs` so we can
+// switch away and back without losing source / mode / scroll / dirty state.
+let docs = [];
+let activeIndex = -1;
+let docIdSeq = 0;
+
+const EMPTY_HTML = `<div id="empty" class="empty"><div class="empty-inner"><div class="logo">M↓</div><h1>MarkRead</h1><p>拖入 <code>.md</code> 文件，或点击左上角「打开」开始阅读。</p><p class="hint">支持 Mermaid 图表 · KaTeX 数学公式 · 代码高亮 · 多主题</p></div></div>`;
+
+function getSplitWidth() {
+  const editorEl = document.getElementById('editor');
+  const m = /0 0 (\d+)px/.exec(editorEl.style.flex || '');
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function saveActiveToDoc() {
+  if (activeIndex < 0 || !docs[activeIndex]) return;
+  const d = docs[activeIndex];
+  d.source = currentSource;
+  d.path = currentPath;
+  d.name = currentName;
+  d.mode = currentMode;
+  d.dirty = isDirty;
+  d.renderedSource = renderedSource;
+  d.tocOpen = document.getElementById('toc').classList.contains('open');
+  const content = document.getElementById('content');
+  d.scrollTop = content.scrollTop;
+  const editorEl = document.getElementById('editor');
+  d.editorScrollTop = editorEl.scrollTop;
+  d.splitWidth = getSplitWidth();
+}
+
+function openDoc(data) {
+  const path = (data && data.path) || '';
+  if (path) {
+    const idx = docs.findIndex((d) => d.path === path);
+    if (idx >= 0) {
+      activateDoc(idx, false);
+      return;
+    }
+  }
+  const doc = {
+    id: ++docIdSeq,
+    path,
+    name: (data && data.name) || (path ? path.split('/').pop() : '未命名'),
+    source: (data && data.content) || '',
+    mode: (activeIndex >= 0 && docs[activeIndex] ? docs[activeIndex].mode : (localStorage.getItem('mdr-mode') || 'read')),
+    tocOpen: loadSettings().tocOpen,
+    scrollTop: 0,
+    editorScrollTop: 0,
+    splitWidth: null,
+    dirty: false,
+    renderedSource: null,
+  };
+  docs.push(doc);
+  activateDoc(docs.length - 1, true);
+}
+
+function activateDoc(i, doRecent = false) {
+  if (i === activeIndex) return;
+  if (activeIndex >= 0 && docs[activeIndex]) saveActiveToDoc();
+  activeIndex = i;
+  const d = docs[i];
+  currentSource = d.source;
+  currentPath = d.path;
+  currentName = d.name;
+  currentMode = d.mode;
+  isDirty = d.dirty;
+  renderedSource = d.renderedSource;
+  renderDocument(currentSource, currentPath, doRecent);
+  setMode(currentMode);
+  setDirty(isDirty);
+  const tocEl = document.getElementById('toc');
+  if (tocEl.classList.contains('open') !== d.tocOpen) toggleToc();
+  const content = document.getElementById('content');
+  const editorEl = document.getElementById('editor');
+  if (d.splitWidth) editorEl.style.flex = `0 0 ${d.splitWidth}px`;
+  requestAnimationFrame(() => {
+    content.scrollTop = d.scrollTop || 0;
+    editorEl.scrollTop = d.editorScrollTop || 0;
+  });
+  renderTabBar();
+}
+
+async function closeDoc(i) {
+  const d = docs[i];
+  if (!d) return;
+  if (d.dirty && !confirm(`「${d.name}」有未保存的修改，关闭将丢弃。确定关闭？`)) return;
+  docs.splice(i, 1);
+  if (i === activeIndex) {
+    if (docs.length === 0) {
+      activeIndex = -1;
+      showEmptyState();
+    } else {
+      const target = i > 0 ? i - 1 : 0;
+      activeIndex = -1; // prevent saveActiveToDoc writing into the removed doc
+      activateDoc(target, false);
+    }
+  }
+  renderTabBar();
+}
+
+function showEmptyState() {
+  currentSource = '';
+  currentPath = '';
+  currentName = '';
+  currentMode = 'read';
+  isDirty = false;
+  renderedSource = null;
+  const content = document.getElementById('content');
+  content.innerHTML = EMPTY_HTML;
+  document.getElementById('doc-name').textContent = '';
+  document.body.dataset.mode = 'read';
+  setDirty(false);
+  renderTabBar();
+}
+
+function updateTabDirty(i, d) {
+  const bar = document.getElementById('tabbar');
+  const tab = bar && bar.querySelector(`.tab[data-idx="${i}"]`);
+  if (!tab) return;
+  let dot = tab.querySelector('.tab-dirty');
+  if (d && !dot) {
+    dot = document.createElement('span');
+    dot.className = 'tab-dirty';
+    dot.title = '未保存';
+    tab.appendChild(dot);
+  } else if (!d && dot) {
+    dot.remove();
+  }
+}
+
+function renderTabBar() {
+  const bar = document.getElementById('tabbar');
+  if (!bar) return;
+  if (docs.length === 0) {
+    bar.style.display = 'none';
+    bar.innerHTML = '';
+    return;
+  }
+  bar.style.display = 'flex';
+  bar.innerHTML = docs
+    .map((d, i) => {
+      const cls = 'tab' + (i === activeIndex ? ' active' : '');
+      const dirty = d.dirty ? '<span class="tab-dirty" title="未保存"></span>' : '';
+      return `<div class="${cls}" data-idx="${i}"><span class="tab-name">${escapeHtml(d.name)}</span>${dirty}<span class="tab-close" data-close="${i}" title="关闭">×</span></div>`;
+    })
+    .join('');
+  bar.querySelectorAll('.tab').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      if (e.target.classList.contains('tab-close')) return;
+      activateDoc(parseInt(el.dataset.idx, 10), false);
+    });
+  });
+  bar.querySelectorAll('.tab-close').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeDoc(parseInt(el.dataset.close, 10));
+    });
+  });
+}
+
 let autoSaveEnabled = localStorage.getItem('mdr-autosave') !== 'false';
 let autoSaveTimer = null;
 let statusTimer = null;
@@ -254,9 +416,12 @@ function setFontSize(size) {
 }
 
 function toggleToc() {
-  const open = !document.getElementById('toc').classList.contains('open');
-  localStorage.setItem('mdr-toc', String(open));
-  document.getElementById('toc').classList.toggle('open', open);
+  const tocEl = document.getElementById('toc');
+  const open = !tocEl.classList.contains('open');
+  tocEl.classList.toggle('open', open);
+  // remember per active document when one is open, else as the global default
+  if (activeIndex >= 0 && docs[activeIndex]) docs[activeIndex].tocOpen = open;
+  else localStorage.setItem('mdr-toc', String(open));
 }
 
 /* ---------------- Status hint (auto-save etc.) ---------------- */
@@ -322,9 +487,11 @@ function renderDocument(source, filePath, updateRecent = true, keepScroll = fals
 /* ---------------- Editing ---------------- */
 function setDirty(d) {
   isDirty = d;
+  if (activeIndex >= 0 && docs[activeIndex]) docs[activeIndex].dirty = d;
   document.getElementById('dirty-dot')?.classList.toggle('show', d);
   const saveBtn = document.getElementById('btn-save');
   if (saveBtn) saveBtn.classList.toggle('is-dirty', d);
+  if (activeIndex >= 0) updateTabDirty(activeIndex, d);
 }
 
 function updateDocName() {
@@ -335,7 +502,8 @@ function updateDocName() {
 
 function setMode(mode) {
   currentMode = mode;
-  localStorage.setItem('mdr-mode', mode);
+  if (activeIndex >= 0 && docs[activeIndex]) docs[activeIndex].mode = mode;
+  else localStorage.setItem('mdr-mode', mode);
   document.body.dataset.mode = mode;
 
   const editorEl = document.getElementById('editor');
@@ -391,8 +559,13 @@ async function doSaveAs() {
   const res = await window.api?.saveFile(result.path, currentSource);
   if (res && res.ok) {
     currentPath = result.path;
+    if (activeIndex >= 0 && docs[activeIndex]) {
+      docs[activeIndex].path = currentPath;
+      docs[activeIndex].name = currentPath.split('/').pop();
+    }
     setDirty(false);
     updateDocName();
+    renderTabBar();
     window.api?.markRecent(currentPath);
     showStatus('已保存');
   } else if (res && res.error) {
@@ -432,14 +605,10 @@ function readFileAsText(file) {
 }
 
 async function openDroppedFile(file) {
-  if (isDirty && !confirm('当前文档有未保存的修改，确定要打开新文件并丢弃吗？')) return;
   try {
     const content = await readFileAsText(file);
-    currentName = file.name || '未命名';
-    renderDocument(content, ''); // no path => Save will prompt "另存为"
-    setDirty(false);
-    updateDocName();
-    setMode(currentMode);
+    // open as a new tab (drop never exposes a local path); doesn't discard others
+    openDoc({ path: '', name: file.name || '未命名', content });
   } catch (e) {
     alert('读取文件失败：' + (e && e.message ? e.message : e));
   }
@@ -482,8 +651,13 @@ function setupDragDrop() {
 function applySplitWidth() {
   const editorEl = document.getElementById('editor');
   if (!editorEl) return;
-  const saved = localStorage.getItem('mdr-split');
-  if (saved) editorEl.style.flex = `0 0 ${saved}px`;
+  let w = null;
+  if (activeIndex >= 0 && docs[activeIndex] && docs[activeIndex].splitWidth) {
+    w = docs[activeIndex].splitWidth;
+  } else {
+    w = localStorage.getItem('mdr-split');
+  }
+  if (w) editorEl.style.flex = `0 0 ${w}px`;
 }
 
 function setupSplitter() {
@@ -585,11 +759,7 @@ function setupUI() {
   });
 
   window.api?.onOpenFile((data) => {
-    if (isDirty && !confirm('当前文档有未保存的修改，确定要打开新文件并丢弃吗？')) return;
-    renderDocument(data.content, data.path);
-    setDirty(false);
-    updateDocName();
-    setMode(currentMode);
+    openDoc(data); // { path, name, content } — focus existing tab or open a new one
   });
   window.api?.onZoom((dir) => {
     if (dir === 'in') setFontSize(loadSettings().fontSize + 1);
@@ -610,6 +780,10 @@ setupUI();
 setupDragDrop();
 setupSplitter();
 setMode(localStorage.getItem('mdr-mode') || 'read');
+renderTabBar(); // initial empty state: keep the bar hidden
 
 // expose for debugging / external triggers
-window.__mdr = { renderDocument, setMode, doSave, doSaveAs, scheduleAutoSave };
+window.__mdr = {
+  renderDocument, setMode, doSave, doSaveAs, scheduleAutoSave,
+  openDoc, closeDoc, activateDoc, getDocs: () => docs, getActive: () => activeIndex,
+};

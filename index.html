@@ -36,6 +36,8 @@
         </div>
       </header>
 
+      <div id="tabbar" class="tabbar" style="display:none;"></div>
+
       <div class="body">
         <aside id="toc" class="toc"></aside>
         <textarea id="editor" class="editor" spellcheck="false" placeholder="在此输入 Markdown…"></textarea>
@@ -68,6 +70,7 @@
           <li><b>主题</b>：浅色 / 护眼 / 深色，快捷键 Cmd+T</li>
           <li><b>字号</b>：Cmd+ +/-/0</li>
           <li><b>目录</b>：Cmd+\ 切换侧边大纲</li>
+          <li><b>多文档（标签页）</b>：右键 md 选「打开方式 → MarkRead」、拖入文件、或菜单「打开」，都会新开一个标签页；点标签切换，标签上的 × 关闭。已打开的文件再次打开会直接切到对应标签</li>
         </ul>
         <p class="hint">图表用 <code>```mermaid</code> 代码块；公式用 <code>$...$</code> 与 <code>$$...$$</code>。</p>
         <button id="btn-help-close" class="tb-btn">关闭</button>

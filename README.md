@@ -24,6 +24,7 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 - **目录大纲**：`Cmd+\` 呼出侧边大纲，点击跳转。
 - **数学公式与图表**：内置 KaTeX（LaTeX 公式）与 Mermaid（流程图 / 时序图等）。
 - **自包含资源**：KaTeX 字体、代码高亮样式等都随包发布，无需联网。
+- **多文档标签页**：通过右键 md「打开方式 → MarkRead」、拖入文件、或菜单「打开」，每个文件都会新开一个标签页；点击标签切换，标签上的 × 关闭。已打开的文件再次打开会自动聚焦到对应标签。每个标签独立记住阅读模式、目录展开、滚动位置与未保存状态。
 
 ### 快捷键
 | 快捷键 | 功能 |
@@ -81,6 +82,7 @@ MarkRead is a desktop Markdown tool built with Tauri 2 (Rust + WebView). It comb
 - **Table of contents**: press `Cmd+\` to open the side outline and jump to any heading.
 - **Math & diagrams**: built-in KaTeX (LaTeX) and Mermaid (flowcharts, sequence diagrams, etc.).
 - **Self-contained assets**: KaTeX fonts and highlight styles ship with the app — no network needed.
+- **Multiple-document tabs**: opening a file via "Open With → MarkRead" (right-click a .md), dropping files, or the "Open" menu each spawns a new tab. Click a tab to switch; the × closes it. Re-opening an already-open file focuses its tab instead of duplicating. Each tab independently remembers its mode, outline state, scroll position, and unsaved changes.
 
 ### Keyboard Shortcuts
 | Shortcut | Action |
