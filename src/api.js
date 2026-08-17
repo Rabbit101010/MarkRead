@@ -115,4 +115,14 @@ if (inTauri) {
         break;
     }
   }).catch((e) => console.error('listen menu failed', e));
+
+  // Files opened from Finder / "Open with" are delivered by the Rust shell as
+  // an 'open-file' event carrying the absolute path.
+  listen('open-file', (event) => {
+    openByPath(event.payload);
+  }).catch((e) => console.error('listen open-file failed', e));
+
+  // Tell the Rust shell the renderer is ready so any pending file-open
+  // requests captured during cold start get flushed to us.
+  invoke('mark_ready').catch((e) => console.error('mark_ready failed', e));
 }

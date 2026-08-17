@@ -32,6 +32,14 @@
     "active": true,
     "targets": ["app"],
     "icon": ["icons/icon.png", "icons/icon.ico", "icons/icon.icns"],
+    "fileAssociations": [
+      {
+        "ext": ["md", "markdown", "mdown", "mkd"],
+        "name": "Markdown 文档",
+        "role": "Editor",
+        "mimeType": "text/markdown"
+      }
+    ],
     "macOS": {
       "minimumSystemVersion": "10.15"
     }

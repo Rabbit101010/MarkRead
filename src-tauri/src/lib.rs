@@ -1,9 +1,10 @@
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
 
 use serde::Serialize;
 use tauri::menu::{IsMenuItem, Menu, MenuItem, MenuEvent, PredefinedMenuItem, Submenu};
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter, Manager, RunEvent};
 
 #[tauri::command]
 fn read_file(path: String) -> Result<String, String> {
@@ -41,6 +42,35 @@ fn recent_path(app: &AppHandle) -> PathBuf {
         .unwrap_or_else(|_| PathBuf::from("recent.json"))
 }
 
+// File-open requests delivered by Finder / "Open with" are handled in two
+// stages: a Rust event (RunEvent::Opened) and a front-end that may not be
+// loaded yet (cold start). We park incoming paths in process-global storage
+// (NOT Tauri State, because macOS can dispatch Opened before setup completes)
+// and flush them once the renderer signals readiness via `mark_ready`.
+static PENDING: OnceLock<Mutex<Vec<String>>> = OnceLock::new();
+static READY: OnceLock<Mutex<bool>> = OnceLock::new();
+
+fn pending_store() -> &'static Mutex<Vec<String>> {
+    PENDING.get_or_init(|| Mutex::new(Vec::new()))
+}
+fn ready_store() -> &'static Mutex<bool> {
+    READY.get_or_init(|| Mutex::new(false))
+}
+
+#[tauri::command]
+fn mark_ready(app: AppHandle) {
+    let paths: Vec<String> = {
+        let mut pend = pending_store().lock().unwrap();
+        std::mem::take(&mut *pend)
+    };
+    *ready_store().lock().unwrap() = true;
+    for p in paths {
+        if let Some(w) = app.get_webview_window("main") {
+            let _ = w.emit("open-file", &p);
+        }
+    }
+}
+
 fn load_recent(file: &Path) -> Vec<String> {
     fs::read_to_string(file)
         .ok()
@@ -58,19 +88,46 @@ struct MenuMsg {
 pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![read_file, write_file, add_recent]);
+        .invoke_handler(tauri::generate_handler![read_file, write_file, add_recent, mark_ready]);
 
     builder = builder.on_menu_event(|app, event| {
         handle_menu_event(app, event);
     });
 
-    builder
+    let app = builder
         .setup(|app| {
             build_menu(app.handle())?;
             Ok(())
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|app_handle, event| {
+        if let RunEvent::Opened { urls } = event {
+            let ready = *ready_store().lock().unwrap();
+            let mut collected: Vec<String> = Vec::new();
+            {
+                let mut pend = pending_store().lock().unwrap();
+                for url in urls {
+                    if let Ok(path) = url.to_file_path() {
+                        let p = path.to_string_lossy().to_string();
+                        if ready {
+                            collected.push(p);
+                        } else {
+                            pend.push(p);
+                        }
+                    }
+                }
+            }
+            if ready {
+                for p in collected {
+                    if let Some(w) = app_handle.get_webview_window("main") {
+                        let _ = w.emit("open-file", &p);
+                    }
+                }
+            }
+        }
+    });
 }
 
 pub fn build_menu(app: &AppHandle) -> tauri::Result<()> {
