@@ -722,6 +722,10 @@ function setupUI() {
   document.getElementById('btn-help-close').addEventListener('click', () => {
     document.getElementById('help-overlay').classList.add('hidden');
   });
+  const helpBtn = document.getElementById('btn-help');
+  if (helpBtn) helpBtn.addEventListener('click', () => {
+    document.getElementById('help-overlay').classList.toggle('hidden');
+  });
 
   // font chooser (display settings inside help panel)
   const selBody = document.getElementById('sel-font-body');
