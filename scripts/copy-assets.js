@@ -6,6 +6,7 @@ const pairs = [
   ['index.html', 'dist/index.html'],
   ['src/styles', 'dist/styles'],
   ['vendor', 'dist/vendor'],
+  ['fonts', 'dist/fonts'],
 ];
 
 for (const [src, dst] of pairs) {

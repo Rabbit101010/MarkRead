@@ -381,11 +381,23 @@ let autoSaveEnabled = localStorage.getItem('mdr-autosave') !== 'false';
 let autoSaveTimer = null;
 let statusTimer = null;
 
+const FONT_STACKS = {
+  system: 'Georgia, "Times New Roman", "Songti SC", "STSong", "SimSun", serif',
+  'noto-sans-sc': '"Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif',
+  'noto-serif-sc': '"Noto Serif SC", Georgia, "Songti SC", "STSong", "SimSun", serif',
+  'ma-shan-zheng': '"Ma Shan Zheng", "Kaiti SC", STKaiti, KaiTi, serif',
+  'inter': '"Inter", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif',
+  'code-system': '"JetBrains Mono", "SF Mono", Menlo, Consolas, monospace',
+  'code-jetbrains-mono': '"JetBrains Mono", "SF Mono", Menlo, Consolas, monospace',
+};
+
 function loadSettings() {
   return {
     theme: localStorage.getItem('mdr-theme') || 'light',
     fontSize: parseInt(localStorage.getItem('mdr-fontsize') || '17', 10),
     tocOpen: localStorage.getItem('mdr-toc') !== 'false',
+    fontBody: localStorage.getItem('mdr-font-body') || 'system',
+    fontCode: localStorage.getItem('mdr-font-code') || 'system',
   };
 }
 
@@ -394,6 +406,10 @@ function applySettings() {
   document.body.className = `theme-${s.theme}`;
   document.documentElement.style.setProperty('--reader-font-size', s.fontSize + 'px');
   document.getElementById('toc').classList.toggle('open', s.tocOpen);
+  const bodyStack = FONT_STACKS[s.fontBody] || FONT_STACKS.system;
+  document.documentElement.style.setProperty('--font-body', bodyStack);
+  const codeStack = FONT_STACKS['code-' + s.fontCode] || FONT_STACKS['code-system'];
+  document.documentElement.style.setProperty('--font-code', codeStack);
 }
 
 function setTheme(theme) {
@@ -706,6 +722,19 @@ function setupUI() {
   document.getElementById('btn-help-close').addEventListener('click', () => {
     document.getElementById('help-overlay').classList.add('hidden');
   });
+
+  // font chooser (display settings inside help panel)
+  const selBody = document.getElementById('sel-font-body');
+  const selCode = document.getElementById('sel-font-code');
+  const st = loadSettings();
+  if (selBody) {
+    selBody.value = st.fontBody;
+    selBody.addEventListener('change', () => { localStorage.setItem('mdr-font-body', selBody.value); applySettings(); });
+  }
+  if (selCode) {
+    selCode.value = st.fontCode;
+    selCode.addEventListener('change', () => { localStorage.setItem('mdr-font-code', selCode.value); applySettings(); });
+  }
 
   // click-to-link buttons (split mode only)
   document.getElementById('btn-locate-preview').addEventListener('click', () => {

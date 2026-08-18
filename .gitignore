@@ -3,7 +3,6 @@
 
 # ===== Node 依赖与前端打包产物（均可由 npm 重建，勿传）=====
 node_modules/
-dist/
 
 # ===== Rust / Tauri 编译产物（src-tauri/target 约 1.1G，切勿上传）=====
 target/
@@ -30,3 +29,4 @@ src-tauri/gen/
 #   package.json / package-lock.json   前端依赖
 #   sample.md              示例文档
 # ------------------------------------------------------------------
+dist/

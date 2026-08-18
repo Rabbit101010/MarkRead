@@ -72,6 +72,26 @@
           <li><b>目录</b>：Cmd+\ 切换侧边大纲</li>
           <li><b>多文档（标签页）</b>：右键 md 选「打开方式 → MarkRead」、拖入文件、或菜单「打开」，都会新开一个标签页；点标签切换，标签上的 × 关闭。已打开的文件再次打开会直接切到对应标签</li>
         </ul>
+        <div class="settings-block">
+          <h3>显示设置</h3>
+          <div class="setting-row">
+            <label for="sel-font-body">正文字体</label>
+            <select id="sel-font-body">
+              <option value="system">系统默认（衬线）</option>
+              <option value="noto-sans-sc">思源黑体</option>
+              <option value="noto-serif-sc">思源宋体</option>
+              <option value="ma-shan-zheng">马善政楷书</option>
+              <option value="inter">Inter（西文）</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <label for="sel-font-code">代码字体</label>
+            <select id="sel-font-code">
+              <option value="system">系统默认</option>
+              <option value="jetbrains-mono">JetBrains Mono</option>
+            </select>
+          </div>
+        </div>
         <p class="hint">图表用 <code>```mermaid</code> 代码块；公式用 <code>$...$</code> 与 <code>$$...$$</code>。</p>
         <button id="btn-help-close" class="tb-btn">关闭</button>
       </div>

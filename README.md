@@ -25,6 +25,7 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 - **数学公式与图表**：内置 KaTeX（LaTeX 公式）与 Mermaid（流程图 / 时序图等）。
 - **自包含资源**：KaTeX 字体、代码高亮样式等都随包发布，无需联网。
 - **多文档标签页**：通过右键 md「打开方式 → MarkRead」、拖入文件、或菜单「打开」，每个文件都会新开一个标签页；点击标签切换，标签上的 × 关闭。已打开的文件再次打开会自动聚焦到对应标签。每个标签独立记住阅读模式、目录展开、滚动位置与未保存状态。
+- **多种正文字体**：内置 5 款 OFL 开源字体（思源黑体 Noto Sans SC / 思源宋体 Noto Serif SC / 马善政楷书 Ma Shan Zheng / Inter / JetBrains Mono），在「帮助」面板（问号按钮）的「显示设置」中可分别切换正文与代码字体，选择即时生效并保存在本机。
 
 ### 界面预览
 ![MarkRead 界面示意图](assets/screenshot-mockup.png)
@@ -40,6 +41,24 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 | `Cmd+T` | 切换主题 |
 | `Cmd+Enter` | 双栏关联定位（编辑器聚焦→跳预览，预览聚焦→跳编辑器） |
 | 双击左/右栏 | 左→右 / 右→左 关联定位 |
+
+### 字体选择（开源字体）
+在「帮助」面板（工具栏问号按钮）的「显示设置」中，可分别为**正文**与**代码**选择字体，改动即时生效，并保存在本机（localStorage），重启后保留：
+
+- **正文字体**：系统默认（衬线）/ 思源黑体 / 思源宋体 / 马善政楷书 / Inter（西文）
+- **代码字体**：系统默认 / JetBrains Mono
+
+内置字体均为 **SIL OFL** 开源许可证，随应用离线打包，不依赖任何外网：
+
+| 字体 | 风格 | 用途 | 许可证 |
+|---|---|---|---|
+| Noto Sans SC（思源黑体） | 无衬线黑体 | 正文 | SIL OFL |
+| Noto Serif SC（思源宋体） | 衬线宋体 | 正文 | SIL OFL |
+| Ma Shan Zheng（马善政楷书） | 手写楷书（文艺） | 正文 | SIL OFL |
+| Inter | 现代无衬线（西文） | 正文 | SIL OFL |
+| JetBrains Mono | 等宽编程字体 | 代码 | SIL OFL |
+
+> 注：原方案的文艺中文选项为「霞鹜文楷 LXGW WenKai」，但它没有可用的 woff2 子集分发、官方仅有 TTF（体积过大），故改用同样 OFL 开源、且能稳定下载的「马善政楷书」。
 
 ### 安装与构建（从源码）
 前置条件：Node.js（含 npm）、Rust 工具链、以及 Tauri 2 所需的 macOS 构建依赖（Xcode Command Line Tools）。
@@ -92,6 +111,7 @@ MarkRead is a desktop Markdown tool built with Tauri 2 (Rust + WebView). It comb
 - **Math & diagrams**: built-in KaTeX (LaTeX) and Mermaid (flowcharts, sequence diagrams, etc.).
 - **Self-contained assets**: KaTeX fonts and highlight styles ship with the app — no network needed.
 - **Multiple-document tabs**: opening a file via "Open With → MarkRead" (right-click a .md), dropping files, or the "Open" menu each spawns a new tab. Click a tab to switch; the × closes it. Re-opening an already-open file focuses its tab instead of duplicating. Each tab independently remembers its mode, outline state, scroll position, and unsaved changes.
+- **Multiple body fonts**: 5 bundled OFL open-source fonts (Noto Sans SC / Noto Serif SC / Ma Shan Zheng / Inter / JetBrains Mono). Switch body and code fonts live in the "Display settings" of the Help panel (the **?** button); your choice is saved locally.
 
 ### Screenshots
 ![MarkRead UI mockup](assets/screenshot-mockup.png)
@@ -107,6 +127,24 @@ MarkRead is a desktop Markdown tool built with Tauri 2 (Rust + WebView). It comb
 | `Cmd+T` | Toggle theme |
 | `Cmd+Enter` | Dual-pane locate (editor focus → jump preview; preview focus → jump editor) |
 | Double-click left/right pane | Locate left→right / right→left |
+
+### Font selection (open-source)
+In the Help panel (the **?** button in the toolbar), the "Display settings" let you pick separate fonts for **body** and **code**. Changes apply instantly and persist locally (localStorage), surviving restarts:
+
+- **Body font**: System default (serif) / Noto Sans SC / Noto Serif SC / Ma Shan Zheng / Inter (Latin)
+- **Code font**: System default / JetBrains Mono
+
+All bundled fonts are released under the **SIL Open Font License (OFL)** and ship offline with the app — no network needed:
+
+| Font | Style | Use | License |
+|---|---|---|---|
+| Noto Sans SC | Sans-serif | Body | SIL OFL |
+| Noto Serif SC | Serif | Body | SIL OFL |
+| Ma Shan Zheng | Handwritten script (artistic) | Body | SIL OFL |
+| Inter | Modern sans-serif (Latin) | Body | SIL OFL |
+| JetBrains Mono | Monospaced | Code | SIL OFL |
+
+> Note: the artistic Chinese option was originally planned as "LXGW WenKai", but it has no woff2 subset distribution (only large TTFs available), so we substituted "Ma Shan Zheng" — also OFL-licensed and reliably downloadable.
 
 ### Install & Build (from source)
 Prerequisites: Node.js (with npm), the Rust toolchain, and the macOS build dependencies required by Tauri 2 (Xcode Command Line Tools).
