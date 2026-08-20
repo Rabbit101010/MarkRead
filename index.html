@@ -56,6 +56,15 @@
           </div>
         </main>
       </div>
+
+      <div id="search-bar" class="search-bar hidden">
+        <input id="search-input" type="text" placeholder="查找…" autocomplete="off" spellcheck="false" />
+        <span id="search-count" class="search-count">0/0</span>
+        <button id="search-prev" class="sb-btn" title="上一个 (Shift+Enter)">↑</button>
+        <button id="search-next" class="sb-btn" title="下一个 (Enter)">↓</button>
+        <label class="sb-case" title="区分大小写"><input id="search-case" type="checkbox" />Aa</label>
+        <button id="search-close" class="sb-btn" title="关闭 (Esc)">✕</button>
+      </div>
     </div>
 
     <div id="drop-overlay" class="drop-overlay"><div class="drop-inner">松开以打开 Markdown 文件</div></div>

@@ -16,6 +16,7 @@ const handlers = {
   exportWord: [],
   toggleEdit: [],
   setMode: [],
+  find: [],
 };
 
 function fire(name, arg) {
@@ -78,6 +79,7 @@ window.api = {
   onExportWord: (cb) => handlers.exportWord.push(cb),
   onToggleEdit: (cb) => handlers.toggleEdit.push(cb),
   onSetMode: (cb) => handlers.setMode.push(cb),
+  onFind: (cb) => handlers.find.push(cb),
 };
 
 // Menu actions are emitted from the Rust shell as a single 'menu' event.
@@ -125,6 +127,9 @@ if (inTauri) {
           break;
         case 'show-help':
           fire('showHelp');
+          break;
+        case 'find':
+          fire('find');
           break;
         case 'recent':
           if (arg) openByPath(arg);

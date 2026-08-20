@@ -226,6 +226,13 @@ let docs = [];
 let activeIndex = -1;
 let docIdSeq = 0;
 
+// In-page search state
+let searchTerm = '';
+let searchCase = false;
+let matchEls = []; // <mark> elements (html path) or {start,end} (textarea path)
+let curMatch = -1;
+let searchMode = 'html'; // 'html' | 'textarea'
+
 const EMPTY_HTML = `<div id="empty" class="empty"><div class="empty-inner"><div class="logo">M↓</div><h1>MarkRead</h1><p>拖入 <code>.md</code> 文件，或点击左上角「打开」开始阅读。</p><p class="hint">支持 Mermaid 图表 · KaTeX 数学公式 · 代码高亮 · 多主题</p></div></div>`;
 
 function getSplitWidth() {
@@ -502,6 +509,11 @@ function renderDocument(source, filePath, updateRecent = true, keepScroll = fals
 
   if (updateRecent && filePath) window.api?.markRecent(filePath);
   renderedSource = source;
+
+  // re-apply an active search highlight after re-render (live preview, theme switch…)
+  if (searchTerm && currentMode !== 'edit') {
+    requestAnimationFrame(runSearch);
+  }
 }
 
 /* ---------------- Editing ---------------- */
@@ -591,6 +603,185 @@ async function doSaveAs() {
   } else if (res && res.error) {
     alert('保存失败：' + res.error);
   }
+}
+
+/* ---------------- In-page search ---------------- */
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function getSearchRoot() {
+  return document.querySelector('#content .markdown-body');
+}
+
+function clearSearchHits() {
+  document.querySelectorAll('mark.mdr-search-hit').forEach((m) => {
+    const parent = m.parentNode;
+    if (!parent) return;
+    while (m.firstChild) parent.insertBefore(m.firstChild, m);
+    parent.removeChild(m);
+    parent.normalize();
+  });
+  matchEls = [];
+  curMatch = -1;
+}
+
+function updateCount() {
+  const countEl = document.getElementById('search-count');
+  if (countEl) {
+    countEl.textContent = matchEls.length ? `${curMatch + 1}/${matchEls.length}` : '0/0';
+  }
+}
+
+function highlightCurrent() {
+  matchEls.forEach((el, i) => {
+    if (el && el.classList) el.classList.toggle('current', i === curMatch);
+  });
+  const el = matchEls[curMatch];
+  if (el && el.scrollIntoView) {
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+}
+
+function gotoMatch(delta) {
+  if (!matchEls.length) return;
+  curMatch = (curMatch + delta + matchEls.length) % matchEls.length;
+  if (searchMode === 'textarea') {
+    selectMatchTextarea();
+  } else {
+    highlightCurrent();
+  }
+  updateCount();
+}
+
+function selectMatchTextarea() {
+  const editor = document.getElementById('editor');
+  const mm = matchEls[curMatch];
+  if (!editor || !mm) return;
+  editor.focus();
+  editor.setSelectionRange(mm.start, mm.end);
+  const before = (currentSource || '').slice(0, mm.start);
+  const line = before.split('\n').length;
+  const cs = getComputedStyle(editor);
+  const lineHeight = parseInt(cs.lineHeight, 10) || 24;
+  const target = (line - 1) * lineHeight - editor.clientHeight / 2;
+  editor.scrollTop = Math.max(0, target);
+}
+
+function runSearchTextarea(term) {
+  searchMode = 'textarea';
+  const editor = document.getElementById('editor');
+  if (!editor) return;
+  const text = currentSource || '';
+  let re;
+  try {
+    re = new RegExp(escapeRegExp(term), searchCase ? 'g' : 'gi');
+  } catch {
+    return;
+  }
+  matchEls = [];
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    matchEls.push({ start: m.index, end: m.index + m[0].length });
+    if (m[0].length === 0) re.lastIndex++;
+  }
+  if (matchEls.length) {
+    curMatch = 0;
+    selectMatchTextarea();
+  }
+  updateCount();
+}
+
+function runSearch() {
+  const term = (searchTerm || '').trim();
+  clearSearchHits();
+  if (!term) {
+    updateCount();
+    return;
+  }
+
+  // In pure-edit mode there is no rendered preview → search the source directly.
+  const root = getSearchRoot();
+  if (!root || currentMode === 'edit') {
+    runSearchTextarea(term);
+    return;
+  }
+
+  searchMode = 'html';
+  let re;
+  try {
+    re = new RegExp(escapeRegExp(term), searchCase ? 'g' : 'gi');
+  } catch {
+    updateCount();
+    return;
+  }
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      const p = node.parentNode;
+      const tag = p && p.tagName ? p.tagName.toLowerCase() : '';
+      if (tag === 'script' || tag === 'style' || tag === 'svg' || tag === 'textarea') {
+        return NodeFilter.FILTER_REJECT;
+      }
+      if (p && p.classList && p.classList.contains('mdr-search-hit')) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+
+  const targets = [];
+  let n;
+  while ((n = walker.nextNode())) targets.push(n);
+
+  for (const textNode of targets) {
+    const text = textNode.nodeValue;
+    re.lastIndex = 0;
+    let m;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    let found = false;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+      const mark = document.createElement('mark');
+      mark.className = 'mdr-search-hit';
+      mark.textContent = m[0];
+      frag.appendChild(mark);
+      matchEls.push(mark);
+      last = m.index + m[0].length;
+      found = true;
+      if (m[0].length === 0) re.lastIndex++;
+    }
+    if (found) {
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      textNode.parentNode.replaceChild(frag, textNode);
+    }
+  }
+
+  if (matchEls.length) {
+    curMatch = 0;
+    highlightCurrent();
+  }
+  updateCount();
+}
+
+function openSearch() {
+  document.getElementById('search-bar')?.classList.remove('hidden');
+  const input = document.getElementById('search-input');
+  if (input) {
+    input.focus();
+    input.select();
+  }
+}
+
+function closeSearch() {
+  document.getElementById('search-bar')?.classList.add('hidden');
+  clearSearchHits();
+  searchTerm = '';
+  const input = document.getElementById('search-input');
+  if (input) input.value = '';
+  updateCount();
 }
 
 /* ---------------- Export PDF / Word ---------------- */
@@ -795,6 +986,24 @@ function setupUI() {
   const wordBtn = document.getElementById('btn-export-word');
   if (wordBtn) wordBtn.addEventListener('click', doExportWord);
 
+  // ---- search (Cmd/Ctrl+F) ----
+  const sInput = document.getElementById('search-input');
+  const sPrev = document.getElementById('search-prev');
+  const sNext = document.getElementById('search-next');
+  const sClose = document.getElementById('search-close');
+  const sCase = document.getElementById('search-case');
+  if (sInput) {
+    sInput.addEventListener('input', () => { searchTerm = sInput.value; runSearch(); });
+    sInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); gotoMatch(e.shiftKey ? -1 : 1); }
+      else if (e.key === 'Escape') { e.preventDefault(); closeSearch(); }
+    });
+  }
+  if (sPrev) sPrev.addEventListener('click', () => gotoMatch(-1));
+  if (sNext) sNext.addEventListener('click', () => gotoMatch(1));
+  if (sClose) sClose.addEventListener('click', closeSearch);
+  if (sCase) sCase.addEventListener('change', (e) => { searchCase = e.target.checked; runSearch(); });
+
   // font chooser (display settings inside help panel)
   const selBody = document.getElementById('sel-font-body');
   const selCode = document.getElementById('sel-font-code');
@@ -876,6 +1085,15 @@ function setupUI() {
   window.api?.onExportWord(doExportWord);
   window.api?.onToggleEdit(toggleEdit);
   window.api?.onSetMode(setMode);
+  window.api?.onFind(openSearch);
+
+  // global Cmd/Ctrl+F → open search
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'f' || e.key === 'F')) {
+      e.preventDefault();
+      openSearch();
+    }
+  });
 }
 
 applySettings();

@@ -27,6 +27,7 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 - **多文档标签页**：通过右键 md「打开方式 → MarkRead」、拖入文件、或菜单「打开」，每个文件都会新开一个标签页；点击标签切换，标签上的 × 关闭。已打开的文件再次打开会自动聚焦到对应标签。每个标签独立记住阅读模式、目录展开、滚动位置与未保存状态。
 - **多种正文字体**：内置 5 款 OFL 开源字体（思源黑体 Noto Sans SC / 思源宋体 Noto Serif SC / 马善政楷书 Ma Shan Zheng / Inter / JetBrains Mono），在「帮助」面板（问号按钮）的「显示设置」中可分别切换正文与代码字体，选择即时生效并保存在本机。
 - **导出 PDF / Word**：工具栏「PDF」「Word」按钮或菜单「文件 ▸ 导出为 PDF… / 导出为 Word…」一键导出。PDF 走系统打印面板「存储为 PDF」，版式完美且零依赖；Word 在本地把当前渲染内容转成真正的 .docx（标题/列表/表格/图片均保留），离线可用。
+- **文档内查找**：`Cmd/Ctrl+F` 或菜单「编辑 ▸ 查找…」打开查找栏。阅读/分屏模式下高亮全部命中并支持上一个/下一个跳转（实时计数）；编辑模式下在源码中直接选中命中行。支持「区分大小写」。
 
 ### 界面预览
 ![MarkRead 界面示意图](assets/screenshot-mockup.png)
@@ -122,6 +123,7 @@ MarkRead is a desktop Markdown tool built with Tauri 2 (Rust + WebView). It comb
 - **Multiple-document tabs**: opening a file via "Open With → MarkRead" (right-click a .md), dropping files, or the "Open" menu each spawns a new tab. Click a tab to switch; the × closes it. Re-opening an already-open file focuses its tab instead of duplicating. Each tab independently remembers its mode, outline state, scroll position, and unsaved changes.
 - **Multiple body fonts**: 5 bundled OFL open-source fonts (Noto Sans SC / Noto Serif SC / Ma Shan Zheng / Inter / JetBrains Mono). Switch body and code fonts live in the "Display settings" of the Help panel (the **?** button); your choice is saved locally.
 - **Export PDF / Word**: one-click export via the "PDF" / "Word" toolbar buttons or "File ▸ Export as PDF… / Export as Word…" (`Cmd+Shift+P` / `Cmd+Shift+W`). PDF goes through the system print panel ("Save as PDF") for pixel-faithful, dependency-free output; Word converts the current rendered content into a real .docx locally (headings, lists, tables, images preserved), fully offline.
+- **In-document find**: `Cmd/Ctrl+F` or "Edit ▸ Find…" opens a search bar. In read/split mode it highlights every match with prev/next navigation and a live count; in edit mode it selects matches directly in the Markdown source. A "match case" toggle is included.
 
 ### Screenshots
 ![MarkRead UI mockup](assets/screenshot-mockup.png)
@@ -137,6 +139,7 @@ MarkRead is a desktop Markdown tool built with Tauri 2 (Rust + WebView). It comb
 | `Cmd+T` | Toggle theme |
 | `Cmd+Enter` | Dual-pane locate (editor focus → jump preview; preview focus → jump editor) |
 | Double-click left/right pane | Locate left→right / right→left |
+| `Cmd/Ctrl+F` | Find in document (highlight all matches, jump prev/next) |
 
 ### Font selection (open-source)
 In the Help panel (the **?** button in the toolbar), the "Display settings" let you pick separate fonts for **body** and **code**. Changes apply instantly and persist locally (localStorage), surviving restarts:

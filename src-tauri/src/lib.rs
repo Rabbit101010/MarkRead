@@ -191,11 +191,13 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<()> {
     let copy = PredefinedMenuItem::copy(app, None)?;
     let paste = PredefinedMenuItem::paste(app, None)?;
     let select_all = PredefinedMenuItem::select_all(app, None)?;
+    let find = MenuItem::with_id(app, "find", "查找…", true, Some("Cmd+F"))?;
+    let sep4b = PredefinedMenuItem::separator(app)?;
     let edit_sub = Submenu::with_items(
         app,
         "编辑",
         true,
-        &[&undo, &redo, &sep4, &cut, &copy, &paste, &select_all],
+        &[&undo, &redo, &sep4, &cut, &copy, &paste, &select_all, &sep4b, &find],
     )?;
 
     let zoom_in = MenuItem::with_id(app, "zoom-in", "字体放大", true, Some("Cmd+="))?;
@@ -246,6 +248,7 @@ pub fn handle_menu_event(app: &AppHandle, event: MenuEvent) {
             "save-as" => ("save-as".into(), None),
             "export-pdf" => ("export-pdf".into(), None),
             "export-word" => ("export-word".into(), None),
+            "find" => ("find".into(), None),
             "zoom-in" => ("zoom".into(), Some("in".into())),
             "zoom-out" => ("zoom".into(), Some("out".into())),
             "zoom-reset" => ("zoom".into(), Some("reset".into())),
