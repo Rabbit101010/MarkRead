@@ -8,6 +8,9 @@ import DOMPurify from 'dompurify';
 // assets, whereas the npm "main" (build/api.js) requires Node's `fs` and only
 // works server-side.
 import htmlDocx from 'html-docx-js/dist/html-docx.js';
+// html2pdf bundles jsPDF + html2canvas; used to render the article to a real
+// (rasterized) PDF file — Tauri's WKWebView does not implement window.print().
+import html2pdf from 'html2pdf.js';
 
 /* ---------------- Markdown engine ---------------- */
 const md = new MarkdownIt({
@@ -804,12 +807,33 @@ async function doExportPdf() {
     showStatus('没有可导出的内容');
     return;
   }
-  const prevTitle = document.title;
-  document.title = docStem();
-  // macOS print panel opens with a "PDF → Save as PDF" option; this is the
-  // zero-dependency, pixel-faithful export path (uses the current theme CSS).
-  window.print();
-  setTimeout(() => { document.title = prevTitle; }, 600);
+  // html2pdf's default export may be a namespace object depending on bundler
+  // interop; normalize to the callable.
+  const maker = (typeof html2pdf === 'function') ? html2pdf : (html2pdf && html2pdf.default);
+  if (!maker) {
+    alert('PDF 导出组件未加载');
+    return;
+  }
+  showStatus('正在生成 PDF…');
+  try {
+    const opt = {
+      margin: 12,
+      filename: docStem() + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] },
+    };
+    const blob = await maker().set(opt).from(article).outputPdf('blob');
+    const u8 = new Uint8Array(await blob.arrayBuffer());
+    const bytes = Array.from(u8);
+    const dlg = await window.api?.saveAsDialog(docStem() + '.pdf');
+    if (!dlg || !dlg.path) { showStatus('已取消'); return; }
+    await window.api.writeFileBytes(dlg.path, bytes);
+    showStatus('已导出 PDF：' + dlg.path.split('/').pop());
+  } catch (e) {
+    alert('导出 PDF 失败：' + (e && e.message ? e.message : e));
+  }
 }
 
 async function doExportWord() {

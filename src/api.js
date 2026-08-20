@@ -63,7 +63,7 @@ window.api = {
     openViaDialog();
   },
   saveFile: (path, content) => invoke('write_file', { path, content }),
-  saveFileBytes: (path, bytes) => invoke('write_file_bytes', { path, bytes }),
+  writeFileBytes: (path, bytes) => invoke('write_file_bytes', { path, bytes }),
   saveAsDialog: (defaultPath) => saveViaDialog(defaultPath),
   markRecent: (path) => {
     if (path) invoke('add_recent', { path });
