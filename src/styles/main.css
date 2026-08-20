@@ -124,7 +124,8 @@ html, body {
   background: var(--bg);
   color: var(--fg);
   -webkit-font-smoothing: antialiased;
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
   overflow-y: auto;
   tab-size: 2;
 }

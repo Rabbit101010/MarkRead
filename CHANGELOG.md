@@ -1,5 +1,8 @@
 # 更新日志 / Changelog
 
+## v0.4.1
+- **修复：编辑器不自动换行**。将 `#editor` 的 `white-space` 由 `pre` 改为 `pre-wrap`，并加 `overflow-wrap: break-word`。现在「编辑」模式与「分屏」模式（含拖动分隔条收窄左栏）下，Markdown 源码都会按窗口宽度自动换行；超长无空格链接/代码也会断行。仅 CSS 改动，无需重编 Rust。
+
 ## v0.4.0
 - **新增：导出 PDF 与 Word**。
   - 工具栏「PDF」「Word」按钮，或菜单「文件 ▸ 导出为 PDF… / 导出为 Word…」（`Cmd+Shift+P` / `Cmd+Shift+W`）。
