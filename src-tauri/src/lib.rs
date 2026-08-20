@@ -17,6 +17,11 @@ fn write_file(path: String, content: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn write_file_bytes(path: String, bytes: Vec<u8>) -> Result<(), String> {
+    fs::write(&path, bytes).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn add_recent(app: AppHandle, path: String) {
     let file = recent_path(&app);
     let mut list = load_recent(&file);
@@ -88,7 +93,13 @@ struct MenuMsg {
 pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![read_file, write_file, add_recent, mark_ready]);
+        .invoke_handler(tauri::generate_handler![
+        read_file,
+        write_file,
+        write_file_bytes,
+        add_recent,
+        mark_ready
+    ]);
 
     builder = builder.on_menu_event(|app, event| {
         handle_menu_event(app, event);
@@ -146,6 +157,8 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<()> {
     let sep1 = PredefinedMenuItem::separator(app)?;
     let save = MenuItem::with_id(app, "save", "保存", true, Some("Cmd+S"))?;
     let save_as = MenuItem::with_id(app, "save-as", "另存为…", true, Some("Cmd+Shift+S"))?;
+    let export_pdf = MenuItem::with_id(app, "export-pdf", "导出为 PDF…", true, Some("Cmd+Shift+P"))?;
+    let export_word = MenuItem::with_id(app, "export-word", "导出为 Word…", true, Some("Cmd+Shift+W"))?;
     let sep2 = PredefinedMenuItem::separator(app)?;
     let close = PredefinedMenuItem::close_window(app, None)?;
 
@@ -167,7 +180,7 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<()> {
     };
 
     let file_items: Vec<&dyn IsMenuItem<tauri::Wry>> = vec![
-        &open, &sep1, &save, &save_as, &sep2, &*recent_item, &close,
+        &open, &sep1, &save, &save_as, &export_pdf, &export_word, &sep2, &*recent_item, &close,
     ];
     let file_sub = Submenu::with_items(app, "文件", true, &file_items)?;
 
@@ -231,6 +244,8 @@ pub fn handle_menu_event(app: &AppHandle, event: MenuEvent) {
             "open" => ("open".into(), None),
             "save" => ("save".into(), None),
             "save-as" => ("save-as".into(), None),
+            "export-pdf" => ("export-pdf".into(), None),
+            "export-word" => ("export-word".into(), None),
             "zoom-in" => ("zoom".into(), Some("in".into())),
             "zoom-out" => ("zoom".into(), Some("out".into())),
             "zoom-reset" => ("zoom".into(), Some("reset".into())),

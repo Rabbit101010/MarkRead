@@ -1,6 +1,6 @@
 {
   "name": "markread-tauri",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "A comfortable Markdown reader for macOS (Tauri 2 shell)",
   "scripts": {
@@ -15,6 +15,7 @@
     "@tauri-apps/plugin-dialog": "^2.2.0",
     "dompurify": "^3.2.3",
     "highlight.js": "^11.10.0",
+    "html-docx-js": "^0.3.1",
     "katex": "^0.16.11",
     "markdown-it": "^14.1.0",
     "mermaid": "^11.4.1"

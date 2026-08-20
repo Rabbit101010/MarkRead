@@ -26,6 +26,7 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 - **自包含资源**：KaTeX 字体、代码高亮样式等都随包发布，无需联网。
 - **多文档标签页**：通过右键 md「打开方式 → MarkRead」、拖入文件、或菜单「打开」，每个文件都会新开一个标签页；点击标签切换，标签上的 × 关闭。已打开的文件再次打开会自动聚焦到对应标签。每个标签独立记住阅读模式、目录展开、滚动位置与未保存状态。
 - **多种正文字体**：内置 5 款 OFL 开源字体（思源黑体 Noto Sans SC / 思源宋体 Noto Serif SC / 马善政楷书 Ma Shan Zheng / Inter / JetBrains Mono），在「帮助」面板（问号按钮）的「显示设置」中可分别切换正文与代码字体，选择即时生效并保存在本机。
+- **导出 PDF / Word**：工具栏「PDF」「Word」按钮或菜单「文件 ▸ 导出为 PDF… / 导出为 Word…」一键导出。PDF 走系统打印面板「存储为 PDF」，版式完美且零依赖；Word 在本地把当前渲染内容转成真正的 .docx（标题/列表/表格/图片均保留），离线可用。
 
 ### 界面预览
 ![MarkRead 界面示意图](assets/screenshot-mockup.png)
@@ -59,6 +60,14 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 | JetBrains Mono | 等宽编程字体 | 代码 | SIL OFL |
 
 > 注：原方案的文艺中文选项为「霞鹜文楷 LXGW WenKai」，但它没有可用的 woff2 子集分发、官方仅有 TTF（体积过大），故改用同样 OFL 开源、且能稳定下载的「马善政楷书」。
+
+### 导出 PDF 与 Word
+工具栏右侧的「PDF」「Word」按钮，或菜单栏「文件 ▸ 导出为 PDF… / 导出为 Word…」（快捷键 `Cmd+Shift+P` / `Cmd+Shift+W`）即可导出**当前正在阅读的文档**：
+
+- **PDF**：调用系统打印面板，在左下角「PDF ▸ 存储为 PDF」中保存。零依赖、版式完美（沿用当前主题与字体），适合分享与打印。
+- **Word**：在本地（离线）把当前渲染后的 HTML 转换为**真正的 .docx** 文件（标题层级、列表、表格、代码块、图片均尽量保留），通过保存对话框落盘，无需任何外部服务。
+
+> 导出的是当前预览内容；若处于纯编辑模式，导出时会先按最新源码渲染一次再导出。
 
 ### 安装与构建（从源码）
 前置条件：Node.js（含 npm）、Rust 工具链、以及 Tauri 2 所需的 macOS 构建依赖（Xcode Command Line Tools）。
@@ -112,6 +121,7 @@ MarkRead is a desktop Markdown tool built with Tauri 2 (Rust + WebView). It comb
 - **Self-contained assets**: KaTeX fonts and highlight styles ship with the app — no network needed.
 - **Multiple-document tabs**: opening a file via "Open With → MarkRead" (right-click a .md), dropping files, or the "Open" menu each spawns a new tab. Click a tab to switch; the × closes it. Re-opening an already-open file focuses its tab instead of duplicating. Each tab independently remembers its mode, outline state, scroll position, and unsaved changes.
 - **Multiple body fonts**: 5 bundled OFL open-source fonts (Noto Sans SC / Noto Serif SC / Ma Shan Zheng / Inter / JetBrains Mono). Switch body and code fonts live in the "Display settings" of the Help panel (the **?** button); your choice is saved locally.
+- **Export PDF / Word**: one-click export via the "PDF" / "Word" toolbar buttons or "File ▸ Export as PDF… / Export as Word…" (`Cmd+Shift+P` / `Cmd+Shift+W`). PDF goes through the system print panel ("Save as PDF") for pixel-faithful, dependency-free output; Word converts the current rendered content into a real .docx locally (headings, lists, tables, images preserved), fully offline.
 
 ### Screenshots
 ![MarkRead UI mockup](assets/screenshot-mockup.png)
@@ -145,6 +155,14 @@ All bundled fonts are released under the **SIL Open Font License (OFL)** and shi
 | JetBrains Mono | Monospaced | Code | SIL OFL |
 
 > Note: the artistic Chinese option was originally planned as "LXGW WenKai", but it has no woff2 subset distribution (only large TTFs available), so we substituted "Ma Shan Zheng" — also OFL-licensed and reliably downloadable.
+
+### Export PDF & Word
+Use the "PDF" / "Word" toolbar buttons, or "File ▸ Export as PDF… / Export as Word…" (`Cmd+Shift+P` / `Cmd+Shift+W`) to export the **document you are currently reading**:
+
+- **PDF**: opens the system print panel; choose "PDF ▸ Save as PDF" in the bottom-left. Zero dependencies and pixel-faithful (keeps the current theme and fonts) — ideal for sharing or printing.
+- **Word**: converts the current rendered HTML into a **real .docx** entirely on-device (offline). Headings, lists, tables, code blocks, and images are preserved as much as possible, then saved via the standard save dialog.
+
+> Export uses the current preview. In pure-edit mode it renders the latest source once before exporting.
 
 ### Install & Build (from source)
 Prerequisites: Node.js (with npm), the Rust toolchain, and the macOS build dependencies required by Tauri 2 (Xcode Command Line Tools).

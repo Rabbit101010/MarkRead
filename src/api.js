@@ -12,6 +12,8 @@ const handlers = {
   showHelp: [],
   save: [],
   saveAs: [],
+  exportPdf: [],
+  exportWord: [],
   toggleEdit: [],
   setMode: [],
 };
@@ -60,6 +62,7 @@ window.api = {
     openViaDialog();
   },
   saveFile: (path, content) => invoke('write_file', { path, content }),
+  saveFileBytes: (path, bytes) => invoke('write_file_bytes', { path, bytes }),
   saveAsDialog: (defaultPath) => saveViaDialog(defaultPath),
   markRecent: (path) => {
     if (path) invoke('add_recent', { path });
@@ -71,6 +74,8 @@ window.api = {
   onShowHelp: (cb) => handlers.showHelp.push(cb),
   onSave: (cb) => handlers.save.push(cb),
   onSaveAs: (cb) => handlers.saveAs.push(cb),
+  onExportPdf: (cb) => handlers.exportPdf.push(cb),
+  onExportWord: (cb) => handlers.exportWord.push(cb),
   onToggleEdit: (cb) => handlers.toggleEdit.push(cb),
   onSetMode: (cb) => handlers.setMode.push(cb),
 };
@@ -96,6 +101,12 @@ if (inTauri) {
           break;
         case 'save-as':
           fire('saveAs');
+          break;
+        case 'export-pdf':
+          fire('exportPdf');
+          break;
+        case 'export-word':
+          fire('exportWord');
           break;
         case 'zoom':
           fire('zoom', arg);

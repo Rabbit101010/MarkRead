@@ -4,6 +4,10 @@ import hljs from 'highlight.js';
 import katex from 'katex';
 import mermaid from 'mermaid';
 import DOMPurify from 'dompurify';
+// Use the browser UMD build (dist/html-docx.js) — it inlines the DOCX template
+// assets, whereas the npm "main" (build/api.js) requires Node's `fs` and only
+// works server-side.
+import htmlDocx from 'html-docx-js/dist/html-docx.js';
 
 /* ---------------- Markdown engine ---------------- */
 const md = new MarkdownIt({
@@ -589,6 +593,66 @@ async function doSaveAs() {
   }
 }
 
+/* ---------------- Export PDF / Word ---------------- */
+function ensurePreview() {
+  // In pure-edit mode the preview pane is empty; (re)render so there is
+  // something to export. Safe to call in any mode.
+  if (currentMode === 'edit' || !document.querySelector('#content .markdown-body')) {
+    renderDocument(currentSource || '', currentPath, false);
+  }
+}
+
+function docStem() {
+  return (currentName || 'document').replace(/\.(md|markdown|mdown|mkd|txt)$/i, '');
+}
+
+async function doExportPdf() {
+  ensurePreview();
+  const article = document.querySelector('#content .markdown-body');
+  if (!article) {
+    showStatus('没有可导出的内容');
+    return;
+  }
+  const prevTitle = document.title;
+  document.title = docStem();
+  // macOS print panel opens with a "PDF → Save as PDF" option; this is the
+  // zero-dependency, pixel-faithful export path (uses the current theme CSS).
+  window.print();
+  setTimeout(() => { document.title = prevTitle; }, 600);
+}
+
+async function doExportWord() {
+  ensurePreview();
+  const article = document.querySelector('#content .markdown-body');
+  if (!article) {
+    showStatus('没有可导出的内容');
+    return;
+  }
+  const inner = article.innerHTML;
+  const full =
+    `<!DOCTYPE html><html xmlns:o='urn:schemas-microsoft-com:office:office' ` +
+    `xmlns:w='urn:schemas-microsoft-com:office:word' ` +
+    `xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='utf-8'>` +
+    `<title>${docStem()}</title></head><body>${inner}</body></html>`;
+  let blob;
+  try {
+    blob = htmlDocx.asBlob(full);
+  } catch (e) {
+    alert('生成 Word 失败：' + (e && e.message ? e.message : e));
+    return;
+  }
+  const u8 = new Uint8Array(await blob.arrayBuffer());
+  const bytes = Array.from(u8);
+  try {
+    const dlg = await window.api?.saveAsDialog(docStem() + '.docx');
+    if (!dlg || !dlg.path) return;
+    await window.api?.writeFileBytes(dlg.path, bytes);
+    showStatus('已导出 Word：' + dlg.path.split('/').pop());
+  } catch (e) {
+    alert('导出 Word 失败：' + (e && e.message ? e.message : e));
+  }
+}
+
 /* ---------------- Auto save ---------------- */
 function scheduleAutoSave() {
   if (!autoSaveEnabled || !currentPath) return;
@@ -726,6 +790,10 @@ function setupUI() {
   if (helpBtn) helpBtn.addEventListener('click', () => {
     document.getElementById('help-overlay').classList.toggle('hidden');
   });
+  const pdfBtn = document.getElementById('btn-export-pdf');
+  if (pdfBtn) pdfBtn.addEventListener('click', doExportPdf);
+  const wordBtn = document.getElementById('btn-export-word');
+  if (wordBtn) wordBtn.addEventListener('click', doExportWord);
 
   // font chooser (display settings inside help panel)
   const selBody = document.getElementById('sel-font-body');
@@ -804,6 +872,8 @@ function setupUI() {
   window.api?.onShowHelp(() => document.getElementById('help-overlay').classList.toggle('hidden'));
   window.api?.onSave(doSave);
   window.api?.onSaveAs(doSaveAs);
+  window.api?.onExportPdf(doExportPdf);
+  window.api?.onExportWord(doExportWord);
   window.api?.onToggleEdit(toggleEdit);
   window.api?.onSetMode(setMode);
 }

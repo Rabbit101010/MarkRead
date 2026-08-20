@@ -457,3 +457,62 @@ body.theme-dark {
   --code-inline-bg: #2c2f33;
   --quote-bg: #24272b;
 }
+
+/* ---------------- Print / PDF export ----------------
+   window.print() opens the macOS print panel; "PDF → Save as PDF" emits a
+   faithful, theme-styled PDF. Hide all app chrome and print only the article. */
+@media print {
+  @page { margin: 18mm; }
+
+  html, body { background: #fff !important; }
+
+  /* Hide every UI surface */
+  #toolbar,
+  #tabbar,
+  #toc,
+  #editor,
+  #splitter,
+  #drop-overlay,
+  #help-overlay,
+  #save-status,
+  #dirty-dot,
+  .locate-btn {
+    display: none !important;
+  }
+
+  /* Show only the rendered article */
+  #app,
+  .body,
+  #content {
+    display: block !important;
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  .markdown-body {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+    box-shadow: none !important;
+  }
+
+  /* Keep code blocks readable on paper */
+  .markdown-body pre,
+  .markdown-body code {
+    background: #f4f4f4 !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  a { color: #000 !important; text-decoration: underline !important; }
+  .markdown-body img { max-width: 100% !important; }
+}
