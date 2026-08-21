@@ -106,7 +106,53 @@ html, body {
   transition: opacity 0.15s, transform 0.15s;
 }
 .dirty-dot.show { opacity: 1; transform: scale(1); }
-#btn-save.is-dirty { border-color: var(--accent); color: var(--accent); }
+#btn-file-menu.is-dirty { border-color: var(--accent); color: var(--accent); }
+
+/* ---------------- File dropdown menu ---------------- */
+.menu-group { position: relative; display: inline-flex; }
+.menu-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  min-width: 150px;
+  padding: 6px;
+  background: var(--bar-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  display: block;
+}
+.menu-pop.hidden { display: none; }
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  font-family: var(--ui-font);
+  font-size: 13px;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+}
+.menu-item:hover { background: var(--btn-bg-hover); }
+.menu-item:active { transform: translateY(1px); }
+.menu-kbd {
+  font-family: var(--ui-font);
+  font-size: 11px;
+  color: var(--fg-dim);
+  background: var(--btn-bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1px 6px;
+  flex: 0 0 auto;
+}
 
 /* ---------------- Editor ---------------- */
 #editor {

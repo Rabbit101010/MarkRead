@@ -524,7 +524,7 @@ function setDirty(d) {
   isDirty = d;
   if (activeIndex >= 0 && docs[activeIndex]) docs[activeIndex].dirty = d;
   document.getElementById('dirty-dot')?.classList.toggle('show', d);
-  const saveBtn = document.getElementById('btn-save');
+  const saveBtn = document.getElementById('btn-file-menu');
   if (saveBtn) saveBtn.classList.toggle('is-dirty', d);
   if (activeIndex >= 0) updateTabDirty(activeIndex, d);
 }
@@ -989,11 +989,36 @@ function setupSplitter() {
 }
 
 /* ---------------- Wiring ---------------- */
+function setupFileMenu() {
+  const fileMenuBtn = document.getElementById('btn-file-menu');
+  const fileMenuPop = document.getElementById('file-menu-pop');
+  if (!fileMenuBtn || !fileMenuPop) return;
+  fileMenuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileMenuPop.classList.toggle('hidden');
+  });
+  fileMenuPop.addEventListener('click', (e) => {
+    const item = e.target.closest('.menu-item');
+    if (!item) return;
+    e.stopPropagation();
+    const action = item.dataset.action;
+    if (action === 'save') doSave();
+    else if (action === 'save-as') doSaveAs();
+    else if (action === 'pdf') doExportPdf();
+    else if (action === 'word') doExportWord();
+    else if (action === 'theme') cycleTheme();
+    fileMenuPop.classList.add('hidden');
+  });
+  // 点击其他区域关闭菜单
+  document.addEventListener('click', () => {
+    if (!fileMenuPop.classList.contains('hidden')) fileMenuPop.classList.add('hidden');
+  });
+}
+
 function setupUI() {
   document.getElementById('btn-open').addEventListener('click', () => window.api?.openDialog());
-  document.getElementById('btn-save').addEventListener('click', doSave);
-  document.getElementById('btn-save-as').addEventListener('click', doSaveAs);
-  document.getElementById('btn-theme').addEventListener('click', cycleTheme);
+  // 合并菜单：保存 / 另存为 / 导出 PDF / 导出 Word / 切换主题
+  setupFileMenu();
   document.getElementById('btn-toc').addEventListener('click', toggleToc);
   document.getElementById('btn-zoom-in').addEventListener('click', () => setFontSize(loadSettings().fontSize + 1));
   document.getElementById('btn-zoom-out').addEventListener('click', () => setFontSize(loadSettings().fontSize - 1));
@@ -1005,10 +1030,7 @@ function setupUI() {
   if (helpBtn) helpBtn.addEventListener('click', () => {
     document.getElementById('help-overlay').classList.toggle('hidden');
   });
-  const pdfBtn = document.getElementById('btn-export-pdf');
-  if (pdfBtn) pdfBtn.addEventListener('click', doExportPdf);
-  const wordBtn = document.getElementById('btn-export-word');
-  if (wordBtn) wordBtn.addEventListener('click', doExportWord);
+  // 导出按钮已合并进「文件 ▾」菜单（见 setupFileMenu）
 
   // ---- search (Cmd/Ctrl+F) ----
   const sInput = document.getElementById('search-input');

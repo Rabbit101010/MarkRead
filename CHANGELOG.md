@@ -1,5 +1,9 @@
 # 更新日志 / Changelog
 
+## v0.5.2
+- **优化：工具栏收拢**。将原「保存 / 另存为 / PDF / Word / 主题」五个独立按钮合并为一个「文件 ▾」下拉按钮，点击展开菜单选择；菜单项保留原快捷键提示（⌘S / ⌘⇧S / ⌘⇧P / ⌘⇧W / ⌘T）。有未保存修改时该按钮保留「脏点」高亮（边框与文字转主题色）。点击菜单外区域自动收起。快捷键与功能逻辑不变。
+- 版本号对齐：package.json 与 tauri.conf.json 统一为 0.5.2。
+
 ## v0.5.1
 - **修复：导出 PDF / Word 失效**。
   - Word：渲染层调用 `window.api.writeFileBytes`，而桥接层只暴露了 `saveFileBytes`，方法名不一致导致 `is not a function`。已统一为 `writeFileBytes`。
