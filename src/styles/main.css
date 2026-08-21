@@ -124,6 +124,8 @@ html, body {
   display: block;
 }
 .menu-pop.hidden { display: none; }
+/* 当菜单位于工具栏最左侧时，下拉改为向左对齐展开，避免溢出屏幕左边界 */
+.menu-group.left .menu-pop { left: 0; right: auto; }
 .menu-item {
   display: flex;
   align-items: center;

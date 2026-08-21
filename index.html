@@ -11,6 +11,16 @@
     <div id="app">
       <header class="toolbar">
         <div class="toolbar-left">
+          <div class="menu-group left" id="menu-file-group">
+            <button id="btn-file-menu" class="tb-btn" title="文件操作：保存 / 另存为 / 导出 PDF / 导出 Word / 切换主题">文件 ▾</button>
+            <div class="menu-pop hidden" id="file-menu-pop">
+              <button class="menu-item" data-action="save" title="保存 (Cmd+S)"><span class="menu-label">保存</span><span class="menu-kbd">⌘S</span></button>
+              <button class="menu-item" data-action="save-as" title="另存为 (Cmd+Shift+S)"><span class="menu-label">另存为</span><span class="menu-kbd">⌘⇧S</span></button>
+              <button class="menu-item" data-action="pdf" title="导出为 PDF（Cmd+Shift+P）"><span class="menu-label">导出 PDF</span><span class="menu-kbd">⌘⇧P</span></button>
+              <button class="menu-item" data-action="word" title="导出为 Word（Cmd+Shift+W）"><span class="menu-label">导出 Word</span><span class="menu-kbd">⌘⇧W</span></button>
+              <button class="menu-item" data-action="theme" title="切换主题 (Cmd+T)"><span class="menu-label">切换主题</span><span class="menu-kbd">⌘T</span></button>
+            </div>
+          </div>
           <button id="btn-open" class="tb-btn" title="打开文件 (Cmd+O)">打开</button>
           <span id="doc-name" class="doc-name"></span>
           <span id="save-status" class="save-status"></span>
@@ -25,16 +35,6 @@
           </div>
           <button id="btn-locate-preview" class="tb-btn locate-btn" title="右侧预览跳到光标所在段落（双击左侧编辑区 / Cmd+Enter）">↦ 预览</button>
           <button id="btn-locate-edit" class="tb-btn locate-btn" title="左侧编辑器定位到当前预览段落（双击右侧正文 / Cmd+Enter）">↤ 编辑</button>
-          <div class="menu-group" id="menu-file-group">
-            <button id="btn-file-menu" class="tb-btn" title="文件操作：保存 / 另存为 / 导出 PDF / 导出 Word / 切换主题">文件 ▾</button>
-            <div class="menu-pop hidden" id="file-menu-pop">
-              <button class="menu-item" data-action="save" title="保存 (Cmd+S)"><span class="menu-label">保存</span><span class="menu-kbd">⌘S</span></button>
-              <button class="menu-item" data-action="save-as" title="另存为 (Cmd+Shift+S)"><span class="menu-label">另存为</span><span class="menu-kbd">⌘⇧S</span></button>
-              <button class="menu-item" data-action="pdf" title="导出为 PDF（Cmd+Shift+P）"><span class="menu-label">导出 PDF</span><span class="menu-kbd">⌘⇧P</span></button>
-              <button class="menu-item" data-action="word" title="导出为 Word（Cmd+Shift+W）"><span class="menu-label">导出 Word</span><span class="menu-kbd">⌘⇧W</span></button>
-              <button class="menu-item" data-action="theme" title="切换主题 (Cmd+T)"><span class="menu-label">切换主题</span><span class="menu-kbd">⌘T</span></button>
-            </div>
-          </div>
           <div class="zoom-group">
             <button id="btn-zoom-out" class="tb-btn" title="缩小 (Cmd+-)">A−</button>
             <button id="btn-zoom-reset" class="tb-btn" title="重置字号 (Cmd+0)">A</button>

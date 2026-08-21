@@ -1,6 +1,6 @@
 {
   "name": "markread-tauri",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "private": true,
   "description": "A comfortable Markdown reader for macOS (Tauri 2 shell)",
   "scripts": {
