@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 480" width="1280" height="480" font-family="'PingFang SC','Helvetica Neue',Arial,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14161a"/>
+      <stop offset="1" stop-color="#23272d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.22" r="0.55">
+      <stop offset="0" stop-color="#4c9bff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#4c9bff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="title" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#c7ccd1"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="480" fill="url(#bg)"/>
+  <rect width="1280" height="480" fill="url(#glow)"/>
+
+  <!-- version badge -->
+  <rect x="1118" y="40" width="92" height="34" rx="17" fill="#2a2e34" stroke="#3a3f46"/>
+  <text x="1164" y="62" font-size="15" fill="#9fd0ff" text-anchor="middle" font-weight="600">v0.5.4</text>
+
+  <!-- app window mockup -->
+  <g>
+    <rect x="70" y="118" width="330" height="252" rx="16" fill="#2b2e33" stroke="#3a3f46" stroke-width="1.5"/>
+    <line x1="70" y1="154" x2="400" y2="154" stroke="#3a3f46" stroke-width="1.5"/>
+    <circle cx="94" cy="136" r="6" fill="#ff5f56"/>
+    <circle cx="116" cy="136" r="6" fill="#ffbd2e"/>
+    <circle cx="138" cy="136" r="6" fill="#27c93f"/>
+    <!-- editor pane (left) -->
+    <g fill="#3a3f46">
+      <rect x="88" y="176" width="120" height="7" rx="3.5"/>
+      <rect x="88" y="194" width="150" height="7" rx="3.5"/>
+      <rect x="88" y="212" width="95" height="7" rx="3.5"/>
+      <rect x="88" y="236" width="140" height="7" rx="3.5"/>
+      <rect x="88" y="254" width="110" height="7" rx="3.5"/>
+      <rect x="88" y="278" width="130" height="7" rx="3.5"/>
+      <rect x="88" y="296" width="80" height="7" rx="3.5"/>
+    </g>
+    <!-- splitter -->
+    <line x1="232" y1="168" x2="232" y2="362" stroke="#4c9bff" stroke-width="2" opacity="0.55"/>
+    <!-- preview pane (right) -->
+    <g>
+      <rect x="252" y="176" width="62" height="11" rx="3" fill="#e7e9ec"/>
+      <rect x="252" y="200" width="120" height="6" rx="3" fill="#4a5058"/>
+      <rect x="252" y="212" width="100" height="6" rx="3" fill="#4a5058"/>
+      <rect x="252" y="224" width="118" height="6" rx="3" fill="#4a5058"/>
+      <rect x="252" y="244" width="112" height="34" rx="6" fill="#34383f" stroke="#4c9bff" stroke-width="1" opacity="0.95"/>
+      <text x="308" y="266" font-size="16" fill="#9fd0ff" text-anchor="middle" font-style="italic">&#931;x&#178;</text>
+      <rect x="252" y="290" width="120" height="6" rx="3" fill="#4a5058"/>
+      <rect x="252" y="302" width="90" height="6" rx="3" fill="#4a5058"/>
+    </g>
+  </g>
+
+  <!-- title block -->
+  <text x="470" y="214" font-size="76" font-weight="800" fill="url(#title)" letter-spacing="1">MarkRead</text>
+  <text x="472" y="256" font-size="28" fill="#d7dbe0" font-weight="600">舒适的 Markdown 阅读器</text>
+  <text x="472" y="288" font-size="18" fill="#8b9199">A cozy, offline-first Markdown reader for macOS</text>
+
+  <!-- feature pills -->
+  <g font-size="15" fill="#cdd2d8" text-anchor="middle">
+    <rect x="472" y="338" width="96" height="36" rx="18" fill="#2a2e34" stroke="#3a3f46"/>
+    <text x="520" y="361">双栏联动</text>
+
+    <rect x="580" y="338" width="112" height="36" rx="18" fill="#2a2e34" stroke="#3a3f46"/>
+    <text x="636" y="361">多字体切换</text>
+
+    <rect x="704" y="338" width="120" height="36" rx="18" fill="#2a2e34" stroke="#3a3f46"/>
+    <text x="764" y="361">PDF / Word</text>
+
+    <rect x="836" y="338" width="96" height="36" rx="18" fill="#2a2e34" stroke="#3a3f46"/>
+    <text x="884" y="361">文档查找</text>
+
+    <rect x="944" y="338" width="108" height="36" rx="18" fill="#2a2e34" stroke="#3a3f46"/>
+    <text x="998" y="361">暗 / 亮主题</text>
+  </g>
+
+  <!-- footer -->
+  <text x="472" y="438" font-size="14" fill="#6b7178">Built with Tauri 2 &#183; Rust &#183; 100% Offline &#183; macOS 10.15+ &#183; MIT License</text>
+</svg>
