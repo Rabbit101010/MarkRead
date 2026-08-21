@@ -117,10 +117,10 @@ html, body {
   z-index: 50;
   min-width: 150px;
   padding: 6px;
-  background: var(--bar-bg);
+  background: var(--menu-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
   display: block;
 }
 .menu-pop.hidden { display: none; }
@@ -476,6 +476,7 @@ body.theme-light {
   --accent: #0969da;
   --btn-bg: #f3f4f6;
   --btn-bg-hover: #e7e9ec;
+  --menu-bg: #ffffff;
   --code-bg: #f6f8fa;
   --code-inline-bg: #eef1f4;
   --quote-bg: #f6f8fa;
@@ -489,6 +490,7 @@ body.theme-sepia {
   --accent: #a8632a;
   --btn-bg: #efe3cc;
   --btn-bg-hover: #e6d7ba;
+  --menu-bg: #fbf2e0;
   --code-bg: #efe2c8;
   --code-inline-bg: #e8d9bd;
   --quote-bg: #efe3c9;
@@ -502,6 +504,7 @@ body.theme-dark {
   --accent: #4c9bff;
   --btn-bg: #2a2d31;
   --btn-bg-hover: #353a3f;
+  --menu-bg: #26292e;
   --code-bg: #232629;
   --code-inline-bg: #2c2f33;
   --quote-bg: #24272b;
