@@ -34,6 +34,7 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 - **多文档标签页**：通过右键 md「打开方式 → MarkRead」、拖入文件、或菜单「打开」，每个文件都会新开一个标签页；点击标签切换，标签上的 × 关闭。已打开的文件再次打开会自动聚焦到对应标签。每个标签独立记住阅读模式、目录展开、滚动位置与未保存状态。
 - **多种正文字体**：内置 5 款 OFL 开源字体（思源黑体 Noto Sans SC / 思源宋体 Noto Serif SC / 马善政楷书 Ma Shan Zheng / Inter / JetBrains Mono），在「帮助」面板（问号按钮）的「显示设置」中可分别切换正文与代码字体，选择即时生效并保存在本机。
 - **可调节正文宽度**：默认**随窗口自动放宽**（`clamp(46rem, 62vw, 88rem)`），全屏或大窗口下正文会显著变宽、不再只剩中间一条；也可在「显示设置」的「正文宽度」中切换 紧凑 / 标准 / 宽松 / 铺满窗口。
+- **阅读模式就地编辑（源码级保真）**：阅读模式下**双击任意一段**，该段就地变成编辑框，内容是这段的**原始 Markdown 源码**——`⌘/Ctrl+Enter` 保存、`Esc` 取消、点击别处自动保存。因为改的是源码本身（只替换该块的源码行区间，不做 HTML→Markdown 反向转换），表格、公式、代码块、Mermaid 图表与你的原始语法都不会被改写。详见下方[「阅读模式就地编辑」](#阅读模式就地编辑)。
 - **导出 PDF / Word**：通过「文件 ▾ ▸ 导出 PDF / 导出 Word」（快捷键 `Cmd+Shift+P` / `Cmd+Shift+W`）导出当前文档。两者均在本地离线完成：
   - **PDF**：用 html2pdf.js 在本地把当前渲染内容生成为真正的 `.pdf`（白底、完全离线、零外部服务）。
   - **Word**：把当前渲染后的 HTML 转换为**真正的 .docx**（标题层级、列表、表格、代码块、图片均尽量保留），通过保存对话框落盘。
@@ -85,6 +86,15 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 - **铺满窗口**：正文占满可用宽度（ `100%` ）。
 
 选择即时生效，并保存在本机，重启后保留。
+
+### 阅读模式就地编辑
+阅读模式原本是只读的（避免反向转换破坏原文）。现在不用切模式也能改：**双击**想改的那一段即可。
+
+- **怎么触发**：阅读模式下双击段落、标题、引用、代码块，或列表 / 表格中的任意位置（会自动作用于**整个列表或整张表**）。
+- **编辑什么**：编辑框里是该块**原始的 Markdown 源码**（不是富文本），改完 `⌘/Ctrl+Enter` 保存，`Esc` 取消，点击别处自动保存。
+- **为什么保真**：保存时只把这一块的源码行区间替换回原文，**不做 HTML → Markdown 反向转换**。所以表格结构、KaTeX 公式、代码块缩进、Mermaid 图表、以及你自己的语法习惯（`-` 还是 `*`、`*` 还是 `_` 强调、空行与缩进）都一字不改。
+- 保存后会立即重新渲染该处，并按既有规则自动写回文件（未保存时「文件 ▾」显示脏点）。
+- 双栏模式下双击行为不变：仍是右侧双击 → 左侧编辑器光标定位到对应源码行。
 
 ### 导出 PDF 与 Word
 通过工具栏最左侧的「文件 ▾」菜单，或菜单栏「文件 ▸ 导出为 PDF… / 导出为 Word…」（快捷键 `Cmd+Shift+P` / `Cmd+Shift+W`）即可导出**当前正在阅读的文档**。两者均在本地、离线完成，不调用任何外部服务：
@@ -151,6 +161,7 @@ MarkRead is a desktop Markdown tool built with Tauri 2 (Rust + WebView). It comb
 - **Multiple-document tabs**: opening a file via "Open With → MarkRead" (right-click a .md), dropping files, or the "Open" menu each spawns a new tab. Click a tab to switch; the × closes it. Re-opening an already-open file focuses its tab instead of duplicating. Each tab independently remembers its mode, outline state, scroll position, and unsaved changes.
 - **Multiple body fonts**: 5 bundled OFL open-source fonts (Noto Sans SC / Noto Serif SC / Ma Shan Zheng / Inter / JetBrains Mono). Switch body and code fonts live in the "Display settings" of the Help panel (the **?** button); your choice is saved locally.
 - **Adjustable content width**: by default it **widens with the window** (`clamp(46rem, 62vw, 88rem)`), so in fullscreen or on large displays the text fills much more of the screen instead of a narrow center column. Switch between Narrow / Normal / Wide / Fill window under "Content width" in Display settings.
+- **Inline source editing in read mode (100% fidelity)**: in read mode, **double-click** any block and it turns into an editor holding that block's **original Markdown source** — `⌘/Ctrl+Enter` to save, `Esc` to cancel, click away to auto-save. Because you edit the source itself (only that block's line range is spliced back, with no HTML→Markdown round-trip), tables, math, code fences, Mermaid diagrams and your own syntax style are never rewritten. See [Inline source editing](#inline-source-editing).
 - **Export PDF / Word**: via "File ▾ ▸ Export PDF / Export Word" (`Cmd+Shift+P` / `Cmd+Shift+W`). Both run fully on-device:
   - **PDF**: html2pdf.js renders the current content into a real `.pdf` locally (white background, fully offline, zero external service).
   - **Word**: converts the current rendered HTML into a **real .docx** (headings, lists, tables, code blocks, images preserved as much as possible), saved via the standard save dialog.
@@ -202,6 +213,15 @@ If the text feels like a narrow column with large empty margins in fullscreen or
 - **Fill window**: uses all available width (`100%`).
 
 The choice applies instantly and persists locally across restarts.
+
+### Inline source editing
+Read mode used to be read-only (to avoid lossy round-trips). Now you can edit without switching modes: **double-click** the block you want to change.
+
+- **How**: double-click a paragraph, heading, quote, code fence, or anywhere inside a list / table (it applies to the **whole list or table**).
+- **What you edit**: the block's **raw Markdown source**, not rich text. `⌘/Ctrl+Enter` saves, `Esc` cancels, clicking away auto-saves.
+- **Why it's lossless**: only that block's source line range is spliced back — there is **no HTML → Markdown conversion**. Table structure, KaTeX math, code indentation, Mermaid diagrams, and your syntax habits (`-` vs `*`, emphasis style, blank lines) are preserved byte-for-byte.
+- The view re-renders immediately and the file is written back per the existing auto-save rules.
+- In split mode, double-click keeps its original behavior: right pane → left editor jumps to the matching source line.
 
 ### Export PDF & Word
 Use the "File ▾" menu at the far left of the toolbar, or "File ▸ Export as PDF… / Export as Word…" (`Cmd+Shift+P` / `Cmd+Shift+W`) to export the **document you are currently reading**. Both run locally and offline, with no external service:

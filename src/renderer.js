@@ -43,7 +43,10 @@ function tagSourceLine(ruleName) {
   const original = md.renderer.rules[ruleName] || defaultRender;
   md.renderer.rules[ruleName] = (tokens, idx, options, env, self) => {
     const t = tokens[idx];
-    if (t.map) t.attrSet('data-source-line', String(t.map[0]));
+    if (t.map) {
+      t.attrSet('data-source-line', String(t.map[0]));
+      if (t.map[1] > t.map[0]) t.attrSet('data-source-line-end', String(t.map[1]));
+    }
     return original(tokens, idx, options, env, self);
   };
 }
@@ -53,7 +56,10 @@ function tagSourceLine(ruleName) {
 const origFence = md.renderer.rules.fence || defaultRender;
 md.renderer.rules.fence = (tokens, idx, options, env, self) => {
   const t = tokens[idx];
-  if (t.map) t.attrSet('data-source-line', String(t.map[0]));
+  if (t.map) {
+    t.attrSet('data-source-line', String(t.map[0]));
+    if (t.map[1] > t.map[0]) t.attrSet('data-source-line-end', String(t.map[1]));
+  }
   return origFence(tokens, idx, options, env, self);
 };
 
@@ -476,6 +482,107 @@ function showStatus(text) {
   el.classList.add('show');
   clearTimeout(statusTimer);
   statusTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+/* ---------------- Inline source editing (read mode) ---------------- */
+// Double-click a block in read mode to edit its ORIGINAL Markdown source in
+// place. We splice only that block's line range back into the source, so
+// tables / math / code fences / mermaid survive untouched — no HTML→Markdown
+// round-trip, hence zero fidelity loss.
+let inlineEdit = null;
+
+function topSourceBlock(el) {
+  let b = el;
+  while (b.parentElement) {
+    const p = b.parentElement;
+    if (!p.closest || !p.closest('.markdown-body')) break;
+    if (p.dataset && p.dataset.sourceLine) b = p;
+    else break;
+  }
+  return b;
+}
+
+function blockLineRange(block) {
+  const start = parseInt(block.dataset.sourceLine, 10);
+  if (Number.isNaN(start)) return null;
+  const total = currentSource.split('\n').length;
+  let end = parseInt(block.dataset.sourceLineEnd, 10);
+  if (Number.isNaN(end) || end <= start) end = start + 1;
+  return { start, end: Math.min(end, total) };
+}
+
+function autoGrow(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = (ta.scrollHeight + 2) + 'px';
+}
+
+function beginInlineEdit(target) {
+  if (inlineEdit) return;
+  const block = topSourceBlock(target);
+  const range = blockLineRange(block);
+  if (!range) { showStatus('这一段定位不到源码，无法就地编辑'); return; }
+  const lines = currentSource.split('\n');
+  const text = lines.slice(range.start, range.end).join('\n');
+
+  const ta = document.createElement('textarea');
+  ta.className = 'inline-edit';
+  ta.value = text;
+  ta.spellcheck = false;
+  const hint = document.createElement('div');
+  hint.className = 'inline-edit-hint';
+  hint.textContent = '正在编辑该段的 Markdown 源码 · ⌘/Ctrl+Enter 保存 · Esc 取消';
+
+  block.style.display = 'none';
+  block.parentNode.insertBefore(ta, block);
+  block.parentNode.insertBefore(hint, block.nextSibling);
+
+  inlineEdit = { block, ta, hint, ...range, original: text };
+
+  ta.focus();
+  ta.setSelectionRange(text.length, text.length);
+  autoGrow(ta);
+  ta.scrollIntoView({ block: 'nearest' });
+
+  ta.addEventListener('input', () => autoGrow(ta));
+  ta.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); commitInlineEdit(); }
+    else if (e.key === 'Escape') { e.preventDefault(); cancelInlineEdit(); }
+  });
+  ta.addEventListener('blur', () => { if (inlineEdit) commitInlineEdit(); });
+}
+
+function teardownInlineEdit() {
+  if (!inlineEdit) return null;
+  const cur = inlineEdit;
+  inlineEdit = null;
+  cur.ta.remove();
+  cur.hint.remove();
+  cur.block.style.display = '';
+  return cur;
+}
+
+function cancelInlineEdit() {
+  if (!inlineEdit) return;
+  teardownInlineEdit();
+  showStatus('已取消编辑');
+}
+
+function commitInlineEdit() {
+  if (!inlineEdit) return;
+  const cur = teardownInlineEdit();
+  const next = cur.ta.value;
+  if (next === cur.original) { showStatus('未做修改'); return; }
+  const lines = currentSource.split('\n');
+  lines.splice(cur.start, cur.end - cur.start, ...next.split('\n'));
+  currentSource = lines.join('\n');
+  if (activeIndex >= 0 && docs[activeIndex]) {
+    docs[activeIndex].source = currentSource;
+    docs[activeIndex].dirty = true;
+  }
+  setDirty(true);
+  renderDocument(currentSource, currentPath, false, true);
+  scheduleAutoSave();
+  showStatus('已修改该段');
 }
 
 /* ---------------- Core render ---------------- */
@@ -1111,9 +1218,13 @@ function setupUI() {
   });
   const contentEl = document.getElementById('content');
   contentEl.addEventListener('dblclick', (e) => {
-    if (currentMode !== 'split') return;
     const el = e.target.closest('[data-source-line]');
-    if (el) locateEditorToLine(parseInt(el.dataset.sourceLine, 10));
+    if (!el) return;
+    if (currentMode === 'split') {
+      locateEditorToLine(parseInt(el.dataset.sourceLine, 10));
+    } else if (currentMode === 'read') {
+      beginInlineEdit(el);
+    }
   });
   document.addEventListener('keydown', (e) => {
     if (!(e.metaKey || e.ctrlKey) || e.key !== 'Enter') return;

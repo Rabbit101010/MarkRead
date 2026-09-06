@@ -375,6 +375,34 @@ body[data-mode="split"] #splitter { display: block; }
   padding: 18px;
 }
 .markdown-body .mermaid svg { max-width: 100%; height: auto; }
+
+/* ---------------- Inline source editing (read mode) ---------------- */
+.inline-edit {
+  display: block;
+  width: 100%;
+  min-height: 80px;
+  margin: 0.6em 0;
+  padding: 12px 14px;
+  font-family: var(--mono-font);
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--fg);
+  background: var(--code-bg);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  tab-size: 2;
+}
+.inline-edit-hint {
+  font-family: var(--ui-font);
+  font-size: 12px;
+  color: var(--fg-dim);
+  margin: 0 0 0.9em;
+}
 .math-error { color: #c0392b; }
 
 /* ---------------- Empty state ---------------- */
