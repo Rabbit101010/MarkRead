@@ -412,8 +412,18 @@ function loadSettings() {
     tocOpen: localStorage.getItem('mdr-toc') !== 'false',
     fontBody: localStorage.getItem('mdr-font-body') || 'system',
     fontCode: localStorage.getItem('mdr-font-code') || 'system',
+    contentWidth: localStorage.getItem('mdr-content-width') || 'normal',
   };
 }
+
+/* 正文宽度档位：narrow 保持传统舒适行宽；normal/wide 随视口放宽，
+   使全屏或大窗口下正文能占用更多空间；full 铺满可用宽度。 */
+const CONTENT_WIDTHS = {
+  narrow: '46rem',
+  normal: 'clamp(46rem, 62vw, 88rem)',
+  wide: 'clamp(52rem, 82vw, 112rem)',
+  full: '100%',
+};
 
 function applySettings() {
   const s = loadSettings();
@@ -424,6 +434,10 @@ function applySettings() {
   document.documentElement.style.setProperty('--font-body', bodyStack);
   const codeStack = FONT_STACKS['code-' + s.fontCode] || FONT_STACKS['code-system'];
   document.documentElement.style.setProperty('--font-code', codeStack);
+  document.documentElement.style.setProperty(
+    '--content-width',
+    CONTENT_WIDTHS[s.contentWidth] || CONTENT_WIDTHS.normal
+  );
 }
 
 function setTheme(theme) {
@@ -1061,6 +1075,11 @@ function setupUI() {
   if (selCode) {
     selCode.value = st.fontCode;
     selCode.addEventListener('change', () => { localStorage.setItem('mdr-font-code', selCode.value); applySettings(); });
+  }
+  const selWidth = document.getElementById('sel-content-width');
+  if (selWidth) {
+    selWidth.value = st.contentWidth;
+    selWidth.addEventListener('change', () => { localStorage.setItem('mdr-content-width', selWidth.value); applySettings(); });
   }
 
   // click-to-link buttons (split mode only)

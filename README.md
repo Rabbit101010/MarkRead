@@ -33,6 +33,7 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 - **自包含资源**：KaTeX 字体、代码高亮样式等都随包发布，无需联网。
 - **多文档标签页**：通过右键 md「打开方式 → MarkRead」、拖入文件、或菜单「打开」，每个文件都会新开一个标签页；点击标签切换，标签上的 × 关闭。已打开的文件再次打开会自动聚焦到对应标签。每个标签独立记住阅读模式、目录展开、滚动位置与未保存状态。
 - **多种正文字体**：内置 5 款 OFL 开源字体（思源黑体 Noto Sans SC / 思源宋体 Noto Serif SC / 马善政楷书 Ma Shan Zheng / Inter / JetBrains Mono），在「帮助」面板（问号按钮）的「显示设置」中可分别切换正文与代码字体，选择即时生效并保存在本机。
+- **可调节正文宽度**：默认**随窗口自动放宽**（`clamp(46rem, 62vw, 88rem)`），全屏或大窗口下正文会显著变宽、不再只剩中间一条；也可在「显示设置」的「正文宽度」中切换 紧凑 / 标准 / 宽松 / 铺满窗口。
 - **导出 PDF / Word**：通过「文件 ▾ ▸ 导出 PDF / 导出 Word」（快捷键 `Cmd+Shift+P` / `Cmd+Shift+W`）导出当前文档。两者均在本地离线完成：
   - **PDF**：用 html2pdf.js 在本地把当前渲染内容生成为真正的 `.pdf`（白底、完全离线、零外部服务）。
   - **Word**：把当前渲染后的 HTML 转换为**真正的 .docx**（标题层级、列表、表格、代码块、图片均尽量保留），通过保存对话框落盘。
@@ -74,6 +75,16 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 | JetBrains Mono | 等宽编程字体 | 代码 | SIL OFL |
 
 > 注：原方案的文艺中文选项为「霞鹜文楷 LXGW WenKai」，但它没有可用的 woff2 子集分发、官方仅有 TTF（体积过大），故改用同样 OFL 开源、且能稳定下载的「马善政楷书」。
+
+### 正文宽度（阅读区宽窄）
+全屏或大窗口下若觉得正文只占中间一条、两侧留白过多，可在「显示设置」的「正文宽度」里调整：
+
+- **标准（默认）**：随窗口宽度自动放宽（ `clamp(46rem, 62vw, 88rem)` ）——小窗口保持舒适行宽，全屏时正文明显变宽（如 1512 宽约 937px、2560 宽约 1408px），充分利用屏幕。
+- **紧凑**：固定约 `46rem`（约 736px），传统阅读行宽，适合长时间专注阅读。
+- **宽松**：更宽（ `clamp(52rem, 82vw, 112rem)` ），适合超宽屏与表格较多的文档。
+- **铺满窗口**：正文占满可用宽度（ `100%` ）。
+
+选择即时生效，并保存在本机，重启后保留。
 
 ### 导出 PDF 与 Word
 通过工具栏最左侧的「文件 ▾」菜单，或菜单栏「文件 ▸ 导出为 PDF… / 导出为 Word…」（快捷键 `Cmd+Shift+P` / `Cmd+Shift+W`）即可导出**当前正在阅读的文档**。两者均在本地、离线完成，不调用任何外部服务：
@@ -139,6 +150,7 @@ MarkRead is a desktop Markdown tool built with Tauri 2 (Rust + WebView). It comb
 - **Self-contained assets**: KaTeX fonts and highlight styles ship with the app — no network needed.
 - **Multiple-document tabs**: opening a file via "Open With → MarkRead" (right-click a .md), dropping files, or the "Open" menu each spawns a new tab. Click a tab to switch; the × closes it. Re-opening an already-open file focuses its tab instead of duplicating. Each tab independently remembers its mode, outline state, scroll position, and unsaved changes.
 - **Multiple body fonts**: 5 bundled OFL open-source fonts (Noto Sans SC / Noto Serif SC / Ma Shan Zheng / Inter / JetBrains Mono). Switch body and code fonts live in the "Display settings" of the Help panel (the **?** button); your choice is saved locally.
+- **Adjustable content width**: by default it **widens with the window** (`clamp(46rem, 62vw, 88rem)`), so in fullscreen or on large displays the text fills much more of the screen instead of a narrow center column. Switch between Narrow / Normal / Wide / Fill window under "Content width" in Display settings.
 - **Export PDF / Word**: via "File ▾ ▸ Export PDF / Export Word" (`Cmd+Shift+P` / `Cmd+Shift+W`). Both run fully on-device:
   - **PDF**: html2pdf.js renders the current content into a real `.pdf` locally (white background, fully offline, zero external service).
   - **Word**: converts the current rendered HTML into a **real .docx** (headings, lists, tables, code blocks, images preserved as much as possible), saved via the standard save dialog.
@@ -180,6 +192,16 @@ All bundled fonts are released under the **SIL Open Font License (OFL)** and shi
 | JetBrains Mono | Monospaced | Code | SIL OFL |
 
 > Note: the artistic Chinese option was originally planned as "LXGW WenKai", but it has no woff2 subset distribution (only large TTFs available), so we substituted "Ma Shan Zheng" — also OFL-licensed and reliably downloadable.
+
+### Content width
+If the text feels like a narrow column with large empty margins in fullscreen or on a big display, adjust "Content width" in Display settings:
+
+- **Normal (default)**: widens with the window (`clamp(46rem, 62vw, 88rem)`) — comfortable line length in small windows, noticeably wider in fullscreen (≈937px at 1512 wide, ≈1408px at 2560 wide).
+- **Narrow**: fixed `46rem` (~736px), classic reading measure for long sessions.
+- **Wide**: wider (`clamp(52rem, 82vw, 112rem)`), good for ultrawide displays and table-heavy docs.
+- **Fill window**: uses all available width (`100%`).
+
+The choice applies instantly and persists locally across restarts.
 
 ### Export PDF & Word
 Use the "File ▾" menu at the far left of the toolbar, or "File ▸ Export as PDF… / Export as Word…" (`Cmd+Shift+P` / `Cmd+Shift+W`) to export the **document you are currently reading**. Both run locally and offline, with no external service:
