@@ -241,6 +241,8 @@ let searchCase = false;
 let matchEls = []; // <mark> elements (html path) or {start,end} (textarea path)
 let curMatch = -1;
 let searchMode = 'html'; // 'html' | 'textarea'
+let replaceCursor = 0; // source offset for sequential single replace
+let replaceWith = ''; // replacement text from #replace-input
 
 const EMPTY_HTML = `<div id="empty" class="empty"><div class="empty-inner"><div class="logo">M↓</div><h1>MarkRead</h1><p>拖入 <code>.md</code> 文件，或点击左上角「打开」开始阅读。</p><p class="hint">支持 Mermaid 图表 · KaTeX 数学公式 · 代码高亮 · 多主题</p></div></div>`;
 
@@ -894,6 +896,7 @@ function runSearch() {
 
 function openSearch() {
   document.getElementById('search-bar')?.classList.remove('hidden');
+  replaceCursor = 0;
   const input = document.getElementById('search-input');
   if (input) {
     input.focus();
@@ -905,9 +908,71 @@ function closeSearch() {
   document.getElementById('search-bar')?.classList.add('hidden');
   clearSearchHits();
   searchTerm = '';
+  replaceWith = '';
+  replaceCursor = 0;
   const input = document.getElementById('search-input');
   if (input) input.value = '';
+  const rInput = document.getElementById('replace-input');
+  if (rInput) rInput.value = '';
   updateCount();
+}
+
+/* ---------------- Find & Replace ---------------- */
+// Replace always operates on the Markdown SOURCE (currentSource) so the change
+// persists and survives re-renders in any mode (read / split / edit).
+function sourceReplaceRegex(term) {
+  let re;
+  try {
+    re = new RegExp(escapeRegExp(term), searchCase ? 'g' : 'gi');
+  } catch {
+    return null;
+  }
+  return re;
+}
+
+function commitReplaced(nextSource) {
+  if (nextSource === currentSource) { showStatus('没有可替换的内容'); return false; }
+  currentSource = nextSource;
+  if (activeIndex >= 0 && docs[activeIndex]) {
+    docs[activeIndex].source = currentSource;
+    docs[activeIndex].dirty = true;
+  }
+  setDirty(true);
+  renderDocument(currentSource, currentPath, false, true);
+  scheduleAutoSave();
+  if (searchTerm) requestAnimationFrame(runSearch);
+  return true;
+}
+
+function replaceAll() {
+  const term = (searchTerm || '').trim();
+  if (!term) { showStatus('请先输入查找内容'); return; }
+  const re = sourceReplaceRegex(term);
+  if (!re) return;
+  let count = 0;
+  const next = currentSource.replace(re, () => { count++; return replaceWith; });
+  if (commitReplaced(next)) showStatus(`已替换 ${count} 处`);
+}
+
+function replaceOne() {
+  const term = (searchTerm || '').trim();
+  if (!term) { showStatus('请先输入查找内容'); return; }
+  const re = sourceReplaceRegex(term);
+  if (!re) return;
+  re.lastIndex = replaceCursor;
+  const m = re.exec(currentSource || '');
+  if (!m) {
+    replaceCursor = 0;
+    showStatus('已到文末，无更多匹配');
+    return;
+  }
+  const start = m.index;
+  const end = start + m[0].length;
+  const next = currentSource.slice(0, start) + replaceWith + currentSource.slice(end);
+  if (commitReplaced(next)) {
+    replaceCursor = start + replaceWith.length;
+    showStatus('已替换 1 处');
+  }
 }
 
 /* ---------------- Export PDF / Word ---------------- */
@@ -1161,8 +1226,11 @@ function setupUI() {
   const sNext = document.getElementById('search-next');
   const sClose = document.getElementById('search-close');
   const sCase = document.getElementById('search-case');
+  const rInput = document.getElementById('replace-input');
+  const rOne = document.getElementById('replace-one');
+  const rAll = document.getElementById('replace-all');
   if (sInput) {
-    sInput.addEventListener('input', () => { searchTerm = sInput.value; runSearch(); });
+    sInput.addEventListener('input', () => { searchTerm = sInput.value; replaceCursor = 0; runSearch(); });
     sInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); gotoMatch(e.shiftKey ? -1 : 1); }
       else if (e.key === 'Escape') { e.preventDefault(); closeSearch(); }
@@ -1171,7 +1239,16 @@ function setupUI() {
   if (sPrev) sPrev.addEventListener('click', () => gotoMatch(-1));
   if (sNext) sNext.addEventListener('click', () => gotoMatch(1));
   if (sClose) sClose.addEventListener('click', closeSearch);
-  if (sCase) sCase.addEventListener('change', (e) => { searchCase = e.target.checked; runSearch(); });
+  if (sCase) sCase.addEventListener('change', (e) => { searchCase = e.target.checked; replaceCursor = 0; runSearch(); });
+  if (rInput) {
+    rInput.addEventListener('input', () => { replaceWith = rInput.value; });
+    rInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); replaceOne(); }
+      else if (e.key === 'Escape') { e.preventDefault(); closeSearch(); }
+    });
+  }
+  if (rOne) rOne.addEventListener('click', replaceOne);
+  if (rAll) rAll.addEventListener('click', replaceAll);
 
   // font chooser (display settings inside help panel)
   const selBody = document.getElementById('sel-font-body');

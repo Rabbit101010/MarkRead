@@ -63,12 +63,19 @@
       </div>
 
       <div id="search-bar" class="search-bar hidden">
-        <input id="search-input" type="text" placeholder="查找…" autocomplete="off" spellcheck="false" />
-        <span id="search-count" class="search-count">0/0</span>
-        <button id="search-prev" class="sb-btn" title="上一个 (Shift+Enter)">↑</button>
-        <button id="search-next" class="sb-btn" title="下一个 (Enter)">↓</button>
-        <label class="sb-case" title="区分大小写"><input id="search-case" type="checkbox" />Aa</label>
-        <button id="search-close" class="sb-btn" title="关闭 (Esc)">✕</button>
+        <div class="search-row">
+          <input id="search-input" type="text" placeholder="查找…" autocomplete="off" spellcheck="false" />
+          <span id="search-count" class="search-count">0/0</span>
+          <button id="search-prev" class="sb-btn" title="上一个 (Shift+Enter)">↑</button>
+          <button id="search-next" class="sb-btn" title="下一个 (Enter)">↓</button>
+          <label class="sb-case" title="区分大小写"><input id="search-case" type="checkbox" />Aa</label>
+          <button id="search-close" class="sb-btn" title="关闭 (Esc)">✕</button>
+        </div>
+        <div class="replace-row">
+          <input id="replace-input" type="text" placeholder="替换为（留空 = 删除）" autocomplete="off" spellcheck="false" />
+          <button id="replace-one" class="sb-btn" title="替换当前匹配（Enter）">替换</button>
+          <button id="replace-all" class="sb-btn" title="替换全部匹配">全部替换</button>
+        </div>
       </div>
     </div>
 
@@ -87,6 +94,7 @@
           <li><b>主题</b>：浅色 / 护眼 / 深色，快捷键 Cmd+T</li>
           <li><b>字号</b>：Cmd+ +/-/0</li>
           <li><b>目录</b>：Cmd+\ 切换侧边大纲</li>
+          <li><b>查找 / 替换</b>：Cmd+F 打开查找栏，↑↓ 或 Enter 跳匹配；在「替换为」里填内容后点「替换」逐个替换、点「全部替换」一次替换全文（三种模式通用，替换作用在 Markdown 源上并自动保存）</li>
           <li><b>多文档（标签页）</b>：右键 md 选「打开方式 → MarkRead」、拖入文件、或菜单「打开」，都会新开一个标签页；点标签切换，标签上的 × 关闭。已打开的文件再次打开会直接切到对应标签</li>
         </ul>
         <div class="settings-block">
