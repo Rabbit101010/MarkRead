@@ -281,7 +281,7 @@ function openDoc(data) {
     path,
     name: (data && data.name) || (path ? path.split('/').pop() : '未命名'),
     source: (data && data.content) || '',
-    mode: (activeIndex >= 0 && docs[activeIndex] ? docs[activeIndex].mode : (localStorage.getItem('mdr-mode') || 'read')),
+    mode: loadSettings().defaultMode,
     tocOpen: loadSettings().tocOpen,
     scrollTop: 0,
     editorScrollTop: 0,
@@ -419,6 +419,8 @@ function loadSettings() {
     fontBody: localStorage.getItem('mdr-font-body') || 'system',
     fontCode: localStorage.getItem('mdr-font-code') || 'system',
     contentWidth: localStorage.getItem('mdr-content-width') || 'normal',
+    // 新开文档 / 启动时的默认模式；不再沿用「上次使用的模式」
+    defaultMode: localStorage.getItem('mdr-default-mode') || 'read',
   };
 }
 
@@ -1188,6 +1190,11 @@ function setupUI() {
     selWidth.value = st.contentWidth;
     selWidth.addEventListener('change', () => { localStorage.setItem('mdr-content-width', selWidth.value); applySettings(); });
   }
+  const selMode = document.getElementById('sel-default-mode');
+  if (selMode) {
+    selMode.value = st.defaultMode;
+    selMode.addEventListener('change', () => { localStorage.setItem('mdr-default-mode', selMode.value); });
+  }
 
   // click-to-link buttons (split mode only)
   document.getElementById('btn-locate-preview').addEventListener('click', () => {
@@ -1276,7 +1283,7 @@ applySettings();
 setupUI();
 setupDragDrop();
 setupSplitter();
-setMode(localStorage.getItem('mdr-mode') || 'read');
+setMode(loadSettings().defaultMode);
 renderTabBar(); // initial empty state: keep the bar hidden
 
 // expose for debugging / external triggers

@@ -87,6 +87,9 @@ MarkRead 是一个用 Tauri 2（Rust + WebView）构建的桌面 Markdown 工具
 
 选择即时生效，并保存在本机，重启后保留。
 
+### 默认模式（启动 / 新开文档）
+在「显示设置」的「默认模式」里选择 **阅读模式（默认）/ 双栏模式 / 编辑模式**。应用启动时、以及每次新打开一个文档，都会使用这个模式，而**不再沿用上次使用的模式**。工具栏上的模式切换仍然照常可用，只影响当前标签页。
+
 ### 阅读模式就地编辑
 阅读模式原本是只读的（避免反向转换破坏原文）。现在不用切模式也能改：**双击**想改的那一段即可。
 
@@ -213,6 +216,9 @@ If the text feels like a narrow column with large empty margins in fullscreen or
 - **Fill window**: uses all available width (`100%`).
 
 The choice applies instantly and persists locally across restarts.
+
+### Default mode (startup / new documents)
+Pick **Read (default) / Split / Edit** under "Default mode" in Display settings. It is used at startup and for every newly opened document — MarkRead no longer reopens in whatever mode you last used. The toolbar mode switch still works as before and only affects the current tab.
 
 ### Inline source editing
 Read mode used to be read-only (to avoid lossy round-trips). Now you can edit without switching modes: **double-click** the block you want to change.
