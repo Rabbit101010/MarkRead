@@ -212,11 +212,20 @@ body[data-mode="edit"] #content { display: none; }
 }
 .tab:hover { background: var(--btn-bg-hover); color: var(--fg); }
 .tab.active { background: var(--bg); color: var(--fg); box-shadow: inset 0 -2px 0 var(--accent); }
+.tab[draggable="true"] { cursor: grab; }
+.tab.dragging { opacity: 0.4; }
 .tab-name { overflow: hidden; text-overflow: ellipsis; }
 .tab-dirty {
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--accent); flex: 0 0 auto;
 }
+.tab-pop {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 5px;
+  font-size: 13px; line-height: 1; color: var(--fg-dim);
+  background: transparent; border: none; cursor: pointer; flex: 0 0 auto;
+}
+.tab-pop:hover { background: var(--btn-bg); color: var(--fg); }
 .tab-close {
   display: inline-flex; align-items: center; justify-content: center;
   width: 18px; height: 18px; border-radius: 5px;

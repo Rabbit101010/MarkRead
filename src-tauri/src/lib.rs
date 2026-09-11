@@ -1,10 +1,11 @@
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
 use serde::Serialize;
 use tauri::menu::{IsMenuItem, Menu, MenuItem, MenuEvent, PredefinedMenuItem, Submenu};
-use tauri::{AppHandle, Emitter, Manager, RunEvent};
+use tauri::{AppHandle, Emitter, Manager, RunEvent, WebviewWindowBuilder};
 
 #[tauri::command]
 fn read_file(path: String) -> Result<String, String> {
@@ -55,6 +56,15 @@ fn recent_path(app: &AppHandle) -> PathBuf {
 static PENDING: OnceLock<Mutex<Vec<String>>> = OnceLock::new();
 static READY: OnceLock<Mutex<bool>> = OnceLock::new();
 
+// Maps a detached window's label -> the file path it should open on first load.
+// Avoids fragile query-string parsing across dev/bundle URL schemes.
+static INITIAL_FILE: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
+static DETACH_SEQ: Mutex<u32> = Mutex::new(0);
+
+fn initial_file_store() -> &'static Mutex<HashMap<String, String>> {
+    INITIAL_FILE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
 fn pending_store() -> &'static Mutex<Vec<String>> {
     PENDING.get_or_init(|| Mutex::new(Vec::new()))
 }
@@ -74,6 +84,35 @@ fn mark_ready(app: AppHandle) {
             let _ = w.emit("open-file", &p);
         }
     }
+}
+
+// Open a document in a brand-new OS window (tab tear-off / pop-out). The path
+// is parked in INITIAL_FILE keyed by the new window's label; the fresh window
+// reads it via `take_initial_file` once its renderer is ready.
+#[tauri::command]
+fn open_detached_window(app: AppHandle, path: String) -> Result<String, String> {
+    let label = {
+        let mut seq = DETACH_SEQ.lock().unwrap();
+        *seq += 1;
+        format!("detached-{}", *seq)
+    };
+    initial_file_store()
+        .lock()
+        .unwrap()
+        .insert(label.clone(), path);
+    let url = tauri::WebviewUrl::App("index.html".into());
+    WebviewWindowBuilder::new(&app, label.clone(), url)
+        .title("MarkRead")
+        .inner_size(1100.0, 760.0)
+        .build()
+        .map_err(|e| e.to_string())?;
+    Ok(label)
+}
+
+// Called by a freshly opened detached window to claim its initial file path.
+#[tauri::command]
+fn take_initial_file(label: String) -> Option<String> {
+    initial_file_store().lock().unwrap().remove(&label)
 }
 
 fn load_recent(file: &Path) -> Vec<String> {
@@ -98,7 +137,9 @@ pub fn run() {
         write_file,
         write_file_bytes,
         add_recent,
-        mark_ready
+        mark_ready,
+        open_detached_window,
+        take_initial_file
     ]);
 
     builder = builder.on_menu_event(|app, event| {
@@ -265,11 +306,19 @@ pub fn handle_menu_event(app: &AppHandle, event: MenuEvent) {
 }
 
 fn emit_menu(app: &AppHandle, action: &str, arg: Option<String>) {
-    if let Some(w) = app.get_webview_window("main") {
-        let msg = MenuMsg {
-            action: action.to_string(),
-            arg,
-        };
+    let msg = MenuMsg {
+        action: action.to_string(),
+        arg,
+    };
+    // Target the frontmost window so detached windows receive their own menu
+    // commands; fall back to "main" if nothing is focused.
+    let target = app
+        .webview_windows()
+        .values()
+        .find(|w| w.is_focused().unwrap_or(false))
+        .cloned()
+        .or_else(|| app.get_webview_window("main"));
+    if let Some(w) = target {
         let _ = w.emit("menu", msg);
     }
 }

@@ -4,6 +4,7 @@ import hljs from 'highlight.js';
 import katex from 'katex';
 import mermaid from 'mermaid';
 import DOMPurify from 'dompurify';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 // Use the browser UMD build (dist/html-docx.js) — it inlines the DOCX template
 // assets, whereas the npm "main" (build/api.js) requires Node's `fs` and only
 // works server-side.
@@ -382,13 +383,28 @@ function renderTabBar() {
     .map((d, i) => {
       const cls = 'tab' + (i === activeIndex ? ' active' : '');
       const dirty = d.dirty ? '<span class="tab-dirty" title="未保存"></span>' : '';
-      return `<div class="${cls}" data-idx="${i}"><span class="tab-name">${escapeHtml(d.name)}</span>${dirty}<span class="tab-close" data-close="${i}" title="关闭">×</span></div>`;
+      const pop = d.path
+        ? `<button class="tab-pop" data-pop="${i}" title="在新窗口打开（或拖拽页签到标签栏外）">⧉</button>`
+        : '';
+      return `<div class="${cls}" data-idx="${i}" draggable="true"><span class="tab-name">${escapeHtml(d.name)}</span>${pop}${dirty}<span class="tab-close" data-close="${i}" title="关闭">×</span></div>`;
     })
     .join('');
   bar.querySelectorAll('.tab').forEach((el) => {
     el.addEventListener('click', (e) => {
-      if (e.target.classList.contains('tab-close')) return;
+      if (e.target.classList.contains('tab-close') || e.target.classList.contains('tab-pop')) return;
       activateDoc(parseInt(el.dataset.idx, 10), false);
+    });
+    el.addEventListener('dragstart', (e) => {
+      e.stopPropagation();
+      e.dataTransfer.setData('text/mdr-tab', el.dataset.idx);
+      tabOverBar = false;
+      el.classList.add('dragging');
+    });
+    el.addEventListener('dragend', (e) => {
+      e.stopPropagation();
+      el.classList.remove('dragging');
+      if (!tabOverBar) popOutTab(parseInt(el.dataset.idx, 10));
+      tabOverBar = false;
     });
   });
   bar.querySelectorAll('.tab-close').forEach((el) => {
@@ -397,11 +413,62 @@ function renderTabBar() {
       closeDoc(parseInt(el.dataset.close, 10));
     });
   });
+  bar.querySelectorAll('.tab-pop').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      popOutTab(parseInt(el.dataset.pop, 10));
+    });
+  });
+}
+
+/* Tear a tab off into its own OS window. The source window keeps the rest of
+   its tabs; the new window opens the same file fresh (saved first if dirty, so
+   the detached copy reflects the latest edits). */
+async function popOutTab(i) {
+  const d = docs[i];
+  if (!d) return;
+  if (!d.path) {
+    showStatus('该文档无本地路径，无法在新窗口打开（例如拖入的临时文件）');
+    return;
+  }
+  if (d.dirty) {
+    try { await doSave(); } catch (_) { /* best-effort */ }
+  }
+  try {
+    await window.api?.detachTab(d.path);
+  } catch (e) {
+    alert('打开新窗口失败：' + (e && e.message ? e.message : e));
+    return;
+  }
+  docs.splice(i, 1);
+  if (i === activeIndex) {
+    if (docs.length === 0) {
+      activeIndex = -1;
+      showEmptyState();
+      await maybeCloseWindowIfEmpty();
+    } else {
+      const t = i > 0 ? i - 1 : 0;
+      activeIndex = -1;
+      activateDoc(t, false);
+    }
+  } else if (i < activeIndex) {
+    activeIndex -= 1;
+  }
+  renderTabBar();
+}
+
+// If this is a detached (non-main) window and has no tabs left, close the OS window.
+async function maybeCloseWindowIfEmpty() {
+  try {
+    const w = getCurrentWindow();
+    if (w.label && w.label !== 'main') await w.close();
+  } catch (_) { /* ignore */ }
 }
 
 let autoSaveEnabled = localStorage.getItem('mdr-autosave') !== 'false';
 let autoSaveTimer = null;
 let statusTimer = null;
+let tabOverBar = false; // true while a tab is being dragged over the tab strip
 
 const FONT_STACKS = {
   system: 'Georgia, "Times New Roman", "Songti SC", "STSong", "SimSun", serif',
@@ -1347,6 +1414,25 @@ function setupUI() {
   window.api?.onSetMode(setMode);
   window.api?.onFind(openSearch);
 
+  // Tab-strip drag tracking: a tab released outside the strip is torn off.
+  const tabbarEl = document.getElementById('tabbar');
+  if (tabbarEl) {
+    tabbarEl.addEventListener('dragover', (e) => {
+      if (Array.from(e.dataTransfer.types).includes('text/mdr-tab')) {
+        e.preventDefault();
+        tabOverBar = true;
+      }
+    });
+    tabbarEl.addEventListener('dragleave', () => { tabOverBar = false; });
+    tabbarEl.addEventListener('drop', (e) => {
+      if (Array.from(e.dataTransfer.types).includes('text/mdr-tab')) {
+        e.preventDefault();
+        e.stopPropagation();
+        tabOverBar = true; // dropped on the strip → keep (no reorder)
+      }
+    });
+  }
+
   // global Cmd/Ctrl+F → open search
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && (e.key === 'f' || e.key === 'F')) {
@@ -1362,6 +1448,10 @@ setupDragDrop();
 setupSplitter();
 setMode(loadSettings().defaultMode);
 renderTabBar(); // initial empty state: keep the bar hidden
+
+// A freshly opened detached window claims the file path parked for its label.
+const inTauri = typeof window !== 'undefined' && (window.__TAURI_INTERNALS__ || window.__TAURI__);
+if (inTauri) window.api?.takeInitialFile();
 
 // expose for debugging / external triggers
 window.__mdr = {

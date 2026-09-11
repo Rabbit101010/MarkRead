@@ -3,6 +3,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { open, save } from '@tauri-apps/plugin-dialog';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 const handlers = {
   openFile: [],
@@ -80,6 +81,18 @@ window.api = {
   onToggleEdit: (cb) => handlers.toggleEdit.push(cb),
   onSetMode: (cb) => handlers.setMode.push(cb),
   onFind: (cb) => handlers.find.push(cb),
+  // Open a document in a new OS window (tab tear-off / pop-out).
+  detachTab: (path) => invoke('open_detached_window', { path }),
+  // Fresh detached window claims the file path parked for its label, then opens it.
+  takeInitialFile: async () => {
+    try {
+      const label = getCurrentWindow().label;
+      const path = await invoke('take_initial_file', { label });
+      if (path) openByPath(path);
+    } catch (e) {
+      console.error('take initial file failed', e);
+    }
+  },
 };
 
 // Menu actions are emitted from the Rust shell as a single 'menu' event.
