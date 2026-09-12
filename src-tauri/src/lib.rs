@@ -195,6 +195,7 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<()> {
     let recent = load_recent(&recent_path(app));
 
     let open = MenuItem::with_id(app, "open", "打开…", true, Some("Cmd+O"))?;
+    let new_doc = MenuItem::with_id(app, "new", "新建", true, Some("Cmd+N"))?;
     let sep1 = PredefinedMenuItem::separator(app)?;
     let save = MenuItem::with_id(app, "save", "保存", true, Some("Cmd+S"))?;
     let save_as = MenuItem::with_id(app, "save-as", "另存为…", true, Some("Cmd+Shift+S"))?;
@@ -221,7 +222,7 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<()> {
     };
 
     let file_items: Vec<&dyn IsMenuItem<tauri::Wry>> = vec![
-        &open, &sep1, &save, &save_as, &export_pdf, &export_word, &sep2, &*recent_item, &close,
+        &open, &new_doc, &sep1, &save, &save_as, &export_pdf, &export_word, &sep2, &*recent_item, &close,
     ];
     let file_sub = Submenu::with_items(app, "文件", true, &file_items)?;
 
@@ -285,6 +286,7 @@ pub fn handle_menu_event(app: &AppHandle, event: MenuEvent) {
     } else {
         match id.as_str() {
             "open" => ("open".into(), None),
+            "new" => ("new".into(), None),
             "save" => ("save".into(), None),
             "save-as" => ("save-as".into(), None),
             "export-pdf" => ("export-pdf".into(), None),

@@ -22,12 +22,14 @@
             </div>
           </div>
           <button id="btn-open" class="tb-btn" title="打开文件 (Cmd+O)">打开</button>
+          <button id="btn-new" class="tb-btn" title="新建空白文档 (Cmd+N)">新建</button>
           <span id="doc-name" class="doc-name"></span>
           <span id="save-status" class="save-status"></span>
           <span id="dirty-dot" class="dirty-dot" title="有未保存的修改"></span>
         </div>
         <div class="toolbar-right">
           <button id="btn-toc" class="tb-btn" title="目录 (Cmd+\)">目录</button>
+          <button id="btn-compare" class="tb-btn" title="双栏对比两个文档（差异高亮）">对比</button>
           <div class="mode-group">
             <button id="btn-mode-read" class="mode-btn active" data-mode="read" title="阅读模式">阅读</button>
             <button id="btn-mode-split" class="mode-btn" data-mode="split" title="双栏模式（编辑+预览）">双栏</button>
@@ -86,6 +88,7 @@
         <p>一个为「舒适阅读」而生的 macOS Markdown 阅读器。</p>
         <ul>
           <li><b>打开</b>：菜单 文件 › 打开，或拖入文件，或拖到程序图标</li>
+          <li><b>新建</b>：工具栏「新建」或菜单 文件 › 新建（Cmd+N），开一个空白「未命名」文档，首次保存时弹「另存为」选路径</li>
           <li><b>三种模式</b>：阅读 / 双栏（左编辑右预览）/ 编辑，工具栏切换或 Cmd+E</li>
           <li><b>修改</b>：在「双栏」或「编辑」模式下直接改文本，Cmd+S 保存到文件（Cmd+Shift+S 另存为）</li>
           <li><b>自动保存</b>：编辑/双栏模式下，有文件路径时输入后约 1 秒自动写回原文件（脏点消失即表示已存）</li>
@@ -96,6 +99,7 @@
           <li><b>目录</b>：Cmd+\ 切换侧边大纲</li>
           <li><b>查找 / 替换</b>：Cmd+F 打开查找栏，↑↓ 或 Enter 跳匹配；在「替换为」里填内容后点「替换」逐个替换、点「全部替换」一次替换全文（三种模式通用，替换作用在 Markdown 源上并自动保存）</li>
           <li><b>多文档（标签页）</b>：右键 md 选「打开方式 → MarkRead」、拖入文件、或菜单「打开」，都会新开一个标签页；点标签切换，标签上的 × 关闭。已打开的文件再次打开会直接切到对应标签</li>
+          <li><b>双栏对比</b>：工具栏「对比」打开对比视图；左 / 右各选一个文档，「预览」并排渲染阅读，「差异」做行级 diff，<strong>删除行标红、新增行标绿</strong>，勾选「仅看差异」只显示有变动的行。对比对象也可点「打开文件」临时载入（不需先开标签页）</li>
           <li><b>拖拽变独立窗口</b>：把某个页签<strong>拖到标签栏以外</strong>松手，会把它拆成新的独立窗口（各自独立、不实时同步）；也可点页签上的 <strong>⧉</strong> 按钮直接弹出。无本地路径的临时文件（如拖入的）不能弹出</li>
         </ul>
         <div class="settings-block">
@@ -137,6 +141,34 @@
         </div>
         <p class="hint">图表用 <code>```mermaid</code> 代码块；公式用 <code>$...$</code> 与 <code>$$...$$</code>。</p>
         <button id="btn-help-close" class="tb-btn">关闭</button>
+      </div>
+    </div>
+
+    <div id="compare-overlay" class="compare-overlay hidden">
+      <div class="compare-bar">
+        <span class="compare-title">双栏对比</span>
+        <div class="compare-modes">
+          <button id="cmp-mode-preview" class="cmp-mode active" data-mode="preview">预览</button>
+          <button id="cmp-mode-diff" class="cmp-mode" data-mode="diff">差异</button>
+        </div>
+        <label id="cmp-onlydiff-wrap" class="cmp-onlydiff hidden"><input type="checkbox" id="cmp-onlydiff" /> 仅看差异</label>
+        <span class="cmp-hint">左右各选一个文档：预览并排，或行级差异高亮</span>
+        <button id="cmp-close" class="tb-btn">关闭</button>
+      </div>
+      <div class="compare-body">
+        <div class="cmp-pane">
+          <div class="cmp-pane-head">
+            <select id="cmp-sel-a" class="cmp-sel"></select>
+          </div>
+          <div class="cmp-content" id="cmp-content-a"></div>
+        </div>
+        <div class="cmp-pane">
+          <div class="cmp-pane-head">
+            <select id="cmp-sel-b" class="cmp-sel"></select>
+            <button id="cmp-open-b" class="cmp-open-btn" title="打开文件作为对比对象">打开文件</button>
+          </div>
+          <div class="cmp-content" id="cmp-content-b"></div>
+        </div>
       </div>
     </div>
 

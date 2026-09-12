@@ -296,6 +296,13 @@ function openDoc(data) {
   activateDoc(docs.length - 1, true);
 }
 
+let newDocSeq = 0;
+function newDoc() {
+  newDocSeq += 1;
+  const name = newDocSeq === 1 ? '未命名' : `未命名 ${newDocSeq}`;
+  openDoc({ path: '', name, content: '' });
+}
+
 function activateDoc(i, doRecent = false) {
   if (i === activeIndex) return;
   if (activeIndex >= 0 && docs[activeIndex]) saveActiveToDoc();
@@ -1270,6 +1277,150 @@ function setupFileMenu() {
   });
 }
 
+/* ---------------- Compare (dual-pane diff) ---------------- */
+let compareA = null; // doc-like { id?, path, name, source }
+let compareB = null;
+let compareMode = 'preview'; // 'preview' | 'diff'
+let compareOnlyDiff = false;
+
+function docRef(d) {
+  return { id: d.id, path: d.path, name: d.name, source: d.source };
+}
+
+function openCompare() {
+  if (docs.length === 0) {
+    alert('请先打开至少一个文档，再使用对比。');
+    return;
+  }
+  const a = docs[activeIndex >= 0 ? activeIndex : 0];
+  compareA = docRef(a);
+  compareB = docs.length > 1 ? docRef(docs[(activeIndex + 1) % docs.length]) : null;
+  document.getElementById('compare-overlay')?.classList.remove('hidden');
+  populateCompareSelects();
+  renderCompare();
+}
+
+function populateCompareSelects() {
+  const selA = document.getElementById('cmp-sel-a');
+  const selB = document.getElementById('cmp-sel-b');
+  if (!selA || !selB) return;
+  const optsA = docs.map((d, i) => `<option value="${i}">${escapeHtml(d.name)}</option>`).join('');
+  let optsB = docs.map((d, i) => `<option value="${i}">${escapeHtml(d.name)}</option>`).join('');
+  if (compareB && !docs.find((d) => d.id === compareB.id)) {
+    optsB += `<option value="__transient" selected>${escapeHtml(compareB.name)}</option>`;
+  }
+  optsB += `<option value="__open">— 打开文件… —</option>`;
+  selA.innerHTML = optsA;
+  selB.innerHTML = optsB;
+  const ai = docs.findIndex((d) => d.id === compareA?.id);
+  const bi = compareB ? docs.findIndex((d) => d.id === compareB.id) : -1;
+  if (ai >= 0) selA.value = String(ai);
+  if (bi >= 0) selB.value = String(bi);
+}
+
+function renderMarkdownInto(el, source) {
+  const { src, store } = protectMath(source || '');
+  let html = md.render(src);
+  html = DOMPurify.sanitize(html, { ADD_ATTR: ['target', 'id'] });
+  html = restoreMath(html, store);
+  el.innerHTML = `<article class="markdown-body">${html}</article>`;
+  const article = el.querySelector('.markdown-body');
+  renderMermaid(article, loadSettings().theme);
+  article.querySelectorAll('a[href^="http"]').forEach((a) => {
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+  });
+}
+
+// Line-level diff via LCS. Returns ops: {t:'eq'|'del'|'ins', a?, b?}.
+function lineDiff(aLines, bLines) {
+  const n = aLines.length;
+  const m = bLines.length;
+  const dp = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      dp[i][j] =
+        aLines[i] === bLines[j]
+          ? dp[i + 1][j + 1] + 1
+          : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  const ops = [];
+  let i = 0;
+  let j = 0;
+  while (i < n && j < m) {
+    if (aLines[i] === bLines[j]) {
+      ops.push({ t: 'eq', a: aLines[i] });
+      i++;
+      j++;
+    } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+      ops.push({ t: 'del', a: aLines[i] });
+      i++;
+    } else {
+      ops.push({ t: 'ins', b: bLines[j] });
+      j++;
+    }
+  }
+  while (i < n) ops.push({ t: 'del', a: aLines[i++] });
+  while (j < m) ops.push({ t: 'ins', b: bLines[j++] });
+  return ops;
+}
+
+function renderDiffSplit(aSrc, bSrc, onlyDiff) {
+  const aLines = (aSrc || '').split('\n');
+  const bLines = (bSrc || '').split('\n');
+  const ops = lineDiff(aLines, bLines);
+  let htmlA = '';
+  let htmlB = '';
+  for (const op of ops) {
+    if (op.t === 'eq') {
+      if (onlyDiff) continue;
+      const line = escapeHtml(op.a) || ' ';
+      htmlA += `<div class="dln">${line}</div>`;
+      htmlB += `<div class="dln">${line}</div>`;
+    } else if (op.t === 'del') {
+      htmlA += `<div class="dln del">${escapeHtml(op.a) || ' '}</div>`;
+      htmlB += `<div class="dln gap"></div>`;
+    } else {
+      htmlA += `<div class="dln gap"></div>`;
+      htmlB += `<div class="dln ins">${escapeHtml(op.b) || ' '}</div>`;
+    }
+  }
+  return { htmlA, htmlB };
+}
+
+function renderCompare() {
+  const ca = document.getElementById('cmp-content-a');
+  const cb = document.getElementById('cmp-content-b');
+  if (!ca || !cb) return;
+  const onlyWrap = document.getElementById('cmp-onlydiff-wrap');
+  if (!compareA || !compareB) {
+    ca.className = 'cmp-content';
+    cb.className = 'cmp-content';
+    ca.innerHTML = '<div class="cmp-empty">请在右侧「打开文件」选择一个对比对象。</div>';
+    cb.innerHTML = '';
+    return;
+  }
+  if (compareMode === 'preview') {
+    onlyWrap?.classList.add('hidden');
+    ca.className = 'cmp-content';
+    cb.className = 'cmp-content';
+    renderMarkdownInto(ca, compareA.source);
+    renderMarkdownInto(cb, compareB.source);
+  } else {
+    onlyWrap?.classList.remove('hidden');
+    ca.className = 'cmp-content cmp-diff-wrap';
+    cb.className = 'cmp-content cmp-diff-wrap';
+    const { htmlA, htmlB } = renderDiffSplit(compareA.source, compareB.source, compareOnlyDiff);
+    ca.innerHTML = `<div class="cmp-diff">${htmlA}</div>`;
+    cb.innerHTML = `<div class="cmp-diff">${htmlB}</div>`;
+  }
+}
+
+function closeCompare() {
+  document.getElementById('compare-overlay')?.classList.add('hidden');
+}
+
 function setupUI() {
   document.getElementById('btn-open').addEventListener('click', () => window.api?.openDialog());
   // 合并菜单：保存 / 另存为 / 导出 PDF / 导出 Word / 切换主题
@@ -1285,6 +1436,46 @@ function setupUI() {
   if (helpBtn) helpBtn.addEventListener('click', () => {
     document.getElementById('help-overlay').classList.toggle('hidden');
   });
+
+  // 新建 / 对比
+  document.getElementById('btn-new').addEventListener('click', newDoc);
+  document.getElementById('btn-compare').addEventListener('click', openCompare);
+
+  // 对比覆盖层交互
+  const cmpSelA = document.getElementById('cmp-sel-a');
+  const cmpSelB = document.getElementById('cmp-sel-b');
+  if (cmpSelA) cmpSelA.addEventListener('change', (e) => {
+    const idx = parseInt(e.target.value, 10);
+    if (!isNaN(idx) && docs[idx]) { compareA = docRef(docs[idx]); renderCompare(); }
+  });
+  if (cmpSelB) cmpSelB.addEventListener('change', async (e) => {
+    const v = e.target.value;
+    if (v === '__open') {
+      const picked = await window.api?.pickAndRead();
+      if (picked) { compareB = picked; }
+      populateCompareSelects();
+      renderCompare();
+    } else if (v !== '__transient') {
+      const idx = parseInt(v, 10);
+      if (!isNaN(idx) && docs[idx]) { compareB = docRef(docs[idx]); renderCompare(); }
+    }
+  });
+  document.getElementById('cmp-open-b')?.addEventListener('click', async () => {
+    const picked = await window.api?.pickAndRead();
+    if (picked) { compareB = picked; populateCompareSelects(); renderCompare(); }
+  });
+  document.querySelectorAll('.cmp-mode').forEach((b) => {
+    b.addEventListener('click', () => {
+      compareMode = b.dataset.mode;
+      document.querySelectorAll('.cmp-mode').forEach((x) => x.classList.toggle('active', x === b));
+      renderCompare();
+    });
+  });
+  document.getElementById('cmp-onlydiff')?.addEventListener('change', (e) => {
+    compareOnlyDiff = e.target.checked;
+    renderCompare();
+  });
+  document.getElementById('cmp-close')?.addEventListener('click', closeCompare);
   // 导出按钮已合并进「文件 ▾」菜单（见 setupFileMenu）
 
   // ---- search (Cmd/Ctrl+F) ----
@@ -1413,6 +1604,7 @@ function setupUI() {
   window.api?.onToggleEdit(toggleEdit);
   window.api?.onSetMode(setMode);
   window.api?.onFind(openSearch);
+  window.api?.onNewDoc(newDoc);
 
   // Tab-strip drag tracking: a tab released outside the strip is torn off.
   const tabbarEl = document.getElementById('tabbar');
@@ -1438,6 +1630,14 @@ function setupUI() {
     if ((e.metaKey || e.ctrlKey) && (e.key === 'f' || e.key === 'F')) {
       e.preventDefault();
       openSearch();
+    }
+  });
+
+  // Esc closes the compare overlay when it is open
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !document.getElementById('compare-overlay')?.classList.contains('hidden')) {
+      e.preventDefault();
+      closeCompare();
     }
   });
 }

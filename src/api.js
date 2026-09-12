@@ -18,6 +18,7 @@ const handlers = {
   toggleEdit: [],
   setMode: [],
   find: [],
+  newDoc: [],
 };
 
 function fire(name, arg) {
@@ -81,6 +82,22 @@ window.api = {
   onToggleEdit: (cb) => handlers.toggleEdit.push(cb),
   onSetMode: (cb) => handlers.setMode.push(cb),
   onFind: (cb) => handlers.find.push(cb),
+  onNewDoc: (cb) => handlers.newDoc.push(cb),
+  // Open a file dialog and read its content; returns { path, name, content } or null.
+  pickAndRead: async () => {
+    const p = await open({
+      multiple: false,
+      filters: [{ name: 'Markdown', extensions: ['md', 'markdown', 'mdown', 'mkd', 'txt'] }],
+    });
+    if (!p) return null;
+    try {
+      const content = await invoke('read_file', { path: p });
+      return { path: p, name: String(p).split('/').pop(), content };
+    } catch (e) {
+      console.error('pickAndRead failed', e);
+      return null;
+    }
+  },
   // Open a document in a new OS window (tab tear-off / pop-out).
   detachTab: (path) => invoke('open_detached_window', { path }),
   // Fresh detached window claims the file path parked for its label, then opens it.
@@ -110,6 +127,9 @@ if (inTauri) {
       switch (action) {
         case 'open':
           openViaDialog();
+          break;
+        case 'new':
+          fire('newDoc');
           break;
         case 'save':
           fire('save');
