@@ -775,35 +775,45 @@ function scheduleRender() {
   }, 350);
 }
 
+// The save dialog may return a path without an extension; force `.md`.
+function ensureMdExt(p) {
+  if (!p) return p;
+  return /\.(md|markdown|mdown|mkd|txt)$/i.test(p) ? p : p + '.md';
+}
+
 async function doSave() {
   if (!currentPath) return doSaveAs();
-  const res = await window.api?.saveFile(currentPath, currentSource);
-  if (res && res.ok) {
+  try {
+    // Rust `write_file` returns Result<(), String>; Tauri resolves to `null`
+    // on success and rejects on failure — do NOT check `res.ok` (always null).
+    await window.api?.saveFile(currentPath, currentSource);
     setDirty(false);
     window.api?.markRecent(currentPath);
     showStatus('已保存');
-  } else if (res && res.error) {
-    alert('保存失败：' + res.error);
+  } catch (e) {
+    alert('保存失败：' + (e && e.message ? e.message : e));
   }
 }
 
 async function doSaveAs() {
   const result = await window.api?.saveAsDialog(currentPath);
   if (!result || !result.path) return;
-  const res = await window.api?.saveFile(result.path, currentSource);
-  if (res && res.ok) {
-    currentPath = result.path;
+  const path = ensureMdExt(result.path);
+  try {
+    await window.api?.saveFile(path, currentSource);
+    currentPath = path;
+    currentName = path.split('/').pop();
     if (activeIndex >= 0 && docs[activeIndex]) {
-      docs[activeIndex].path = currentPath;
-      docs[activeIndex].name = currentPath.split('/').pop();
+      docs[activeIndex].path = path;
+      docs[activeIndex].name = currentName;
     }
     setDirty(false);
     updateDocName();
     renderTabBar();
-    window.api?.markRecent(currentPath);
+    window.api?.markRecent(path);
     showStatus('已保存');
-  } else if (res && res.error) {
-    alert('保存失败：' + res.error);
+  } catch (e) {
+    alert('保存失败：' + (e && e.message ? e.message : e));
   }
 }
 
@@ -1133,19 +1143,21 @@ async function doExportWord() {
 /* ---------------- Auto save ---------------- */
 function scheduleAutoSave() {
   if (!autoSaveEnabled || !currentPath) return;
-  clearTimeout(autoSaveTimer);
-  autoSaveTimer = setTimeout(async () => {
-    const res = await window.api?.saveFile(currentPath, currentSource);
-    if (res && res.ok) {
-      setDirty(false);
-      const t = new Date();
-      const hh = String(t.getHours()).padStart(2, '0');
-      const mm = String(t.getMinutes()).padStart(2, '0');
-      showStatus(`已自动保存 ${hh}:${mm}`);
-    } else if (res && res.error) {
-      showStatus('自动保存失败');
-    }
-  }, 1000);
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(async () => {
+      try {
+        // Rust `write_file` returns Result<(), String>; Tauri resolves to
+        // `null` on success — do NOT check `res.ok`.
+        await window.api?.saveFile(currentPath, currentSource);
+        setDirty(false);
+        const t = new Date();
+        const hh = String(t.getHours()).padStart(2, '0');
+        const mm = String(t.getMinutes()).padStart(2, '0');
+        showStatus(`已自动保存 ${hh}:${mm}`);
+      } catch (e) {
+        showStatus('自动保存失败');
+      }
+    }, 1000);
 }
 
 /* ---------------- File reading (drop) ---------------- */

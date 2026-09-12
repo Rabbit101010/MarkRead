@@ -55,7 +55,12 @@ async function openByPath(path) {
 }
 
 async function saveViaDialog(defaultPath) {
-  const p = await save({ defaultPath });
+  // Tauri's save panel does not reliably append the extension on its own,
+  // so we also force `.md` on the front-end side (see doSaveAs).
+  const p = await save({
+    defaultPath: defaultPath || undefined,
+    filters: [{ name: 'Markdown', extensions: ['md'] }],
+  });
   return p ? { path: p } : null;
 }
 
